@@ -18,6 +18,17 @@ interface Item {
 export default function ActivityFeed({ initial }: { initial: Item[] }) {
   const [items, setItems] = useState<Item[]>(initial)
   const [, forceTick] = useState(0)
+  /*
+   * "3 seconds ago" is computed from the clock, so the server's render and the
+   * client's first render disagree by however long the response took -- a
+   * hydration mismatch. Render an absolute date on the server, then swap to
+   * relative time once mounted, when there is only one clock in play.
+   */
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     const poll = setInterval(async () => {
@@ -70,13 +81,25 @@ export default function ActivityFeed({ initial }: { initial: Item[] }) {
               </span>
             )}
           </span>
-          <span style={{ color: 'var(--text-faint)', whiteSpace: 'nowrap' }}>
-            {relativeTime(item.claimedAt)}
+          <span
+            style={{ color: 'var(--text-faint)', whiteSpace: 'nowrap' }}
+            suppressHydrationWarning
+          >
+            {mounted ? relativeTime(item.claimedAt) : absoluteDate(item.claimedAt)}
           </span>
         </li>
       ))}
     </ul>
   )
+}
+
+function absoluteDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  })
 }
 
 function relativeTime(iso: string): string {
