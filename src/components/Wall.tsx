@@ -17,12 +17,18 @@ import { CATEGORIES } from '@/lib/categories'
  * what is currently on screen. Three layers, back to front:
  *
  *   1. The locked remainder -- the full 1,000,000-cell boundary, always drawn,
- *      greyed out. Nothing in it is claimed or claimable yet, and showing it is
- *      the honest way to convey the scale of "one million" without implying the
- *      wall is fuller than it is.
- *   2. The active ring -- the region currently being sold, outlined.
+ *      and textured with a fine dot pattern rather than left flat, so it reads
+ *      as "not open yet" instead of as empty or broken. Nothing in it is
+ *      claimed or claimable, and showing it is the honest way to convey the
+ *      scale of "one million" without implying the wall is fuller than it is.
+ *   2. The active ring -- the region currently being sold. Drawn as a plain,
+ *      untextured field inside an ember frontier line, so the boundary between
+ *      "you can buy here" and "not yet" is visible at a glance.
  *   3. Claimed cells -- images where a photo exists, the neutral treatment for
- *      squares that are blank or whose content was removed.
+ *      squares that are blank or whose content was removed. Cell edges are
+ *      snapped to whole device pixels and drawn edge to edge, with no lattice
+ *      over them, so a filled area reads as one continuous photo mosaic rather
+ *      than as a grid of tiles.
  *
  * Images are only requested once a cell is large enough on screen to be worth
  * seeing, and are cached with a hard cap so a long pan cannot exhaust memory.
@@ -47,6 +53,7 @@ const MIN_SCALE = 0.35 // whole wall fits comfortably
 const MAX_SCALE = 40 // a single square fills a good chunk of the viewport
 const IMAGE_SCALE_THRESHOLD = 7 // px per cell before images are worth loading
 const IMAGE_CACHE_CAP = 900
+const DOT_SPACING = 6 // px between locked-region dots, in screen space
 
 export default function Wall({ storageBaseUrl, activeRing, initialCells }: WallProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -56,6 +63,7 @@ export default function Wall({ storageBaseUrl, activeRing, initialCells }: WallP
     new Map(initialCells.map((c) => [c.i, c])),
   )
   const imagesRef = useRef<Map<string, HTMLImageElement | 'loading' | 'error'>>(new Map())
+  const dotsRef = useRef<{ pattern: CanvasPattern | null; dpr: number } | null>(null)
   const viewRef = useRef({ scale: 1, offsetX: 0, offsetY: 0 })
   const frameRef = useRef<number | null>(null)
   const pointerRef = useRef<{
@@ -89,58 +97,78 @@ export default function Wall({ storageBaseUrl, activeRing, initialCells }: WallP
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 
     const styles = getComputedStyle(document.documentElement)
-    const colBg = styles.getPropertyValue('--bg').trim() || '#0f0f10'
-    const colLocked = styles.getPropertyValue('--square-locked').trim() || '#191920'
-    const colBlank = styles.getPropertyValue('--square-blank').trim() || '#2e2e35'
-    const colBorder = styles.getPropertyValue('--border-strong').trim() || '#3a3a42'
+    const read = (name: string, fallback: string) =>
+      styles.getPropertyValue(name).trim() || fallback
+    const colBg = read('--wall-bg', '#1b1511')
+    const colLocked = read('--wall-locked', '#28201a')
+    const colOpen = read('--wall-open', '#322820')
+    const colDot = read('--wall-dot', '#46372a')
+    const colBlank = read('--wall-blank', '#544639')
+    const colTile = read('--wall-tile', '#c9a98c')
+    const colRing = read('--wall-ring', '#c2542b')
 
     ctx.fillStyle = colBg
     ctx.fillRect(0, 0, cssW, cssH)
 
+    const gridX = offsetX
+    const gridY = offsetY
+    const gridW = GRID_SIZE * scale
+    const gridH = GRID_SIZE * scale
+
     // Layer 1: the full million-cell field, locked.
     ctx.fillStyle = colLocked
-    ctx.fillRect(offsetX, offsetY, GRID_SIZE * scale, GRID_SIZE * scale)
+    ctx.fillRect(gridX, gridY, gridW, gridH)
 
-    // Grid lines, only once cells are big enough for them to mean anything.
-    if (scale >= 4) {
-      ctx.strokeStyle = 'rgba(255,255,255,0.035)'
-      ctx.lineWidth = 1
+    // The locked region's texture. Fixed in screen space at DOT_SPACING so the
+    // density stays legible from "whole wall" out to "one square", and offset
+    // by the pan so it travels with the wall instead of sitting on the glass.
+    if (!dotsRef.current || dotsRef.current.dpr !== dpr) {
+      dotsRef.current = { pattern: buildDotPattern(ctx, colDot, dpr), dpr }
+    }
+    const dots = dotsRef.current.pattern
+    if (dots) {
+      ctx.save()
       ctx.beginPath()
-      const x0 = Math.max(0, Math.floor((0 - offsetX) / scale))
-      const x1 = Math.min(GRID_SIZE, Math.ceil((cssW - offsetX) / scale))
-      const y0 = Math.max(0, Math.floor((0 - offsetY) / scale))
-      const y1 = Math.min(GRID_SIZE, Math.ceil((cssH - offsetY) / scale))
-      for (let x = x0; x <= x1; x++) {
-        ctx.moveTo(Math.round(offsetX + x * scale) + 0.5, offsetY + y0 * scale)
-        ctx.lineTo(Math.round(offsetX + x * scale) + 0.5, offsetY + y1 * scale)
-      }
-      for (let y = y0; y <= y1; y++) {
-        ctx.moveTo(offsetX + x0 * scale, Math.round(offsetY + y * scale) + 0.5)
-        ctx.lineTo(offsetX + x1 * scale, Math.round(offsetY + y * scale) + 0.5)
-      }
-      ctx.stroke()
+      ctx.rect(gridX, gridY, gridW, gridH)
+      ctx.clip()
+      ctx.translate(offsetX % DOT_SPACING, offsetY % DOT_SPACING)
+      ctx.fillStyle = dots
+      ctx.fillRect(-DOT_SPACING, -DOT_SPACING, cssW + DOT_SPACING * 2, cssH + DOT_SPACING * 2)
+      ctx.restore()
     }
 
-    // Layer 2: the ring currently being sold.
+    // Layer 2: the ring currently being sold. Left untextured so the dotted
+    // remainder beyond it reads as a different state, not merely a darker one,
+    // and outlined in ember because it is the one live edge on the wall.
     const b = ringBounds(activeRing)
-    ctx.strokeStyle = colBorder
+    const ringX = offsetX + b.minX * scale
+    const ringY = offsetY + b.minY * scale
+    const ringW = (b.maxX - b.minX + 1) * scale
+    const ringH = (b.maxY - b.minY + 1) * scale
+    ctx.fillStyle = colOpen
+    ctx.fillRect(ringX, ringY, ringW, ringH)
+    ctx.strokeStyle = colRing
     ctx.lineWidth = 1.5
-    ctx.strokeRect(
-      offsetX + b.minX * scale,
-      offsetY + b.minY * scale,
-      (b.maxX - b.minX + 1) * scale,
-      (b.maxY - b.minY + 1) * scale,
-    )
+    ctx.strokeRect(ringX - 0.75, ringY - 0.75, ringW + 1.5, ringH + 1.5)
 
     // Layer 3: claimed cells inside the viewport.
     const showImages = scale >= IMAGE_SCALE_THRESHOLD
-    const size = Math.max(1, scale)
     const filtering = category !== ''
 
     for (const cell of cellsRef.current.values()) {
-      const px = offsetX + cell.x * scale
-      const py = offsetY + cell.y * scale
-      if (px + size < 0 || py + size < 0 || px > cssW || py > cssH) continue
+      /*
+       * Snap each cell to whole pixels and derive its size from the *next*
+       * cell's snapped edge. Drawing at fractional coordinates leaves a
+       * half-transparent seam between neighbours, which turns a dense block of
+       * photographs into a visible grid of tiles -- exactly what the wall
+       * should not look like. Sharing edges this way tiles with no gaps and no
+       * overlap at any zoom level.
+       */
+      const px = Math.round(offsetX + cell.x * scale)
+      const py = Math.round(offsetY + cell.y * scale)
+      const w = Math.max(1, Math.round(offsetX + (cell.x + 1) * scale) - px)
+      const h = Math.max(1, Math.round(offsetY + (cell.y + 1) * scale) - py)
+      if (px + w < 0 || py + h < 0 || px > cssW || py > cssH) continue
 
       const dimmed = filtering && cell.c !== category
       ctx.globalAlpha = dimmed ? 0.14 : 1
@@ -148,20 +176,20 @@ export default function Wall({ storageBaseUrl, activeRing, initialCells }: WallP
       if (cell.s === 1 && cell.k && showImages) {
         const img = getImage(imagesRef.current, storageBaseUrl, cell.k, scheduleDraw)
         if (img) {
-          ctx.drawImage(img, px, py, size, size)
+          ctx.drawImage(img, px, py, w, h)
         } else {
           ctx.fillStyle = colBlank
-          ctx.fillRect(px, py, size, size)
+          ctx.fillRect(px, py, w, h)
         }
       } else if (cell.s === 1) {
-        // Zoomed out: a filled square reads as a lighter tile. Loading tens of
+        // Zoomed out: a filled square reads as a warm lit tile. Loading tens of
         // thousands of images at this scale would be pointless and ruinous.
-        ctx.fillStyle = '#6a6a78'
-        ctx.fillRect(px, py, size, size)
+        ctx.fillStyle = colTile
+        ctx.fillRect(px, py, w, h)
       } else {
         // Neutral default treatment: paid for, never filled, or removed.
         ctx.fillStyle = colBlank
-        ctx.fillRect(px, py, size, size)
+        ctx.fillRect(px, py, w, h)
       }
     }
     ctx.globalAlpha = 1
@@ -340,20 +368,21 @@ export default function Wall({ storageBaseUrl, activeRing, initialCells }: WallP
             ))}
           </select>
         </label>
-        <p className="hint" style={{ margin: 0, flex: '1 1 240px' }}>
-          Drag to pan, scroll to zoom, click a square to open it. Grey cells are
-          the part of the million that has not opened yet — nothing there is
-          claimed or for sale.
+        <p className="hint" style={{ margin: 0, flex: '1 1 260px' }}>
+          Drag to pan, scroll to zoom, click a square to open it. The dotted
+          field is the part of the million that has not opened yet — nothing
+          there is claimed or for sale.
         </p>
       </div>
 
       <div
         style={{
           position: 'relative',
-          borderRadius: 14,
+          borderRadius: 18,
           overflow: 'hidden',
-          border: '1px solid var(--border)',
-          background: 'var(--bg)',
+          border: '1px solid var(--vault-rule)',
+          background: 'var(--wall-bg)',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,.045), 0 18px 40px -24px rgba(0,0,0,.8)',
         }}
       >
         <canvas
@@ -365,7 +394,7 @@ export default function Wall({ storageBaseUrl, activeRing, initialCells }: WallP
             cursor: hovered ? 'pointer' : 'grab',
             touchAction: 'none',
             opacity: ready ? 1 : 0,
-            transition: 'opacity .3s ease',
+            transition: 'opacity 300ms var(--ease-out)',
           }}
           aria-label={`Interactive wall of ${TOTAL_SQUARES.toLocaleString('en-US')} squares`}
         />
@@ -375,16 +404,18 @@ export default function Wall({ storageBaseUrl, activeRing, initialCells }: WallP
               position: 'absolute',
               left: 12,
               bottom: 12,
-              background: 'rgba(15,15,16,.92)',
-              border: '1px solid var(--border)',
-              borderRadius: 8,
+              background: 'rgba(33,26,21,.94)',
+              color: 'var(--vault-ink)',
+              border: '1px solid var(--vault-rule)',
+              borderRadius: 10,
               padding: '8px 12px',
               fontSize: 13,
               pointerEvents: 'none',
+              boxShadow: '0 8px 20px -10px rgba(0,0,0,.7)',
             }}
           >
-            <strong>{formatSquareLabel(hovered.i)}</strong>
-            <span style={{ color: 'var(--text-faint)' }}>
+            <strong className="num">{formatSquareLabel(hovered.i)}</strong>
+            <span style={{ color: 'var(--vault-dim)' }}>
               {' — '}
               {hovered.s === 1 ? 'claimed & filled' : 'claimed, blank'}
             </span>
@@ -396,6 +427,41 @@ export default function Wall({ storageBaseUrl, activeRing, initialCells }: WallP
 }
 
 // ---- helpers --------------------------------------------------------------
+
+/**
+ * The locked region's texture: one small dot per DOT_SPACING square.
+ *
+ * Built once per device-pixel-ratio and cached, because a repeating pattern is
+ * a single fill no matter how much of the million-cell field is on screen --
+ * stroking a lattice across it would cost thousands of path operations a frame
+ * and, worse, would draw a grid over the part of the wall that is meant to
+ * read as untouched.
+ */
+function buildDotPattern(
+  ctx: CanvasRenderingContext2D,
+  color: string,
+  dpr: number,
+): CanvasPattern | null {
+  const tile = document.createElement('canvas')
+  tile.width = Math.max(1, Math.round(DOT_SPACING * dpr))
+  tile.height = Math.max(1, Math.round(DOT_SPACING * dpr))
+  const tctx = tile.getContext('2d')
+  if (!tctx) return null
+
+  tctx.scale(dpr, dpr)
+  tctx.fillStyle = color
+  tctx.beginPath()
+  tctx.arc(DOT_SPACING / 2, DOT_SPACING / 2, 1, 0, Math.PI * 2)
+  tctx.fill()
+
+  const pattern = ctx.createPattern(tile, 'repeat')
+  // The tile is in device pixels but the context draws in CSS pixels, so scale
+  // the pattern back down or the dots space out on high-density screens.
+  if (pattern && typeof DOMMatrix !== 'undefined') {
+    pattern.setTransform(new DOMMatrix([1 / dpr, 0, 0, 1 / dpr, 0, 0]))
+  }
+  return pattern
+}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.min(hi, Math.max(lo, v))

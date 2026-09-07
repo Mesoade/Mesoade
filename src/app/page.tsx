@@ -1,7 +1,9 @@
 import ActivityFeed from '@/components/ActivityFeed'
+import { Faq, FaqItem } from '@/components/Faq'
 import Footer from '@/components/Footer'
+import Reveal from '@/components/Reveal'
 import Wall from '@/components/Wall'
-import { BRAND_NAME, BRAND_TAGLINE, SQUARE_PRICE_DISPLAY, UPLOAD_WINDOW_DAYS, env } from '@/lib/env'
+import { BRAND_NAME, SQUARE_PRICE_DISPLAY, UPLOAD_WINDOW_DAYS, env } from '@/lib/env'
 import { getRecentActivity, getStats, getWallCells } from '@/lib/wall/queries'
 import { TOTAL_SQUARES } from '@/lib/wall/geometry'
 
@@ -19,132 +21,122 @@ export default async function HomePage() {
   return (
     <>
       <main>
-        {/* 1. Hero ------------------------------------------------------- */}
-        <section style={{ padding: '90px 0 64px' }}>
+        {/* 1. Hero -------------------------------------------------------
+            No photography, no illustration: type, colour and space carry
+            the whole thing. One accent lands on one word. */}
+        <section className="hero">
           <div className="wrap">
-            <p
-              style={{
-                fontSize: 13,
-                letterSpacing: '.14em',
-                textTransform: 'uppercase',
-                color: 'var(--text-faint)',
-                margin: '0 0 22px',
-              }}
-            >
-              {BRAND_NAME}
-            </p>
-            <h1
-              style={{
-                fontSize: 'clamp(38px, 7vw, 68px)',
-                lineHeight: 1.05,
-                letterSpacing: '-.03em',
-                margin: '0 0 20px',
-                maxWidth: '15ch',
-              }}
-            >
-              {BRAND_TAGLINE}
+            <p className="eyebrow enter enter-1">{BRAND_NAME}</p>
+
+            <h1 className="hero-title enter enter-2">
+              You get one.
+              <span className="hero-forever">Forever.</span>
+              Choose wisely.
             </h1>
-            <p
-              style={{
-                fontSize: 19,
-                color: 'var(--text-dim)',
-                lineHeight: 1.6,
-                maxWidth: '52ch',
-                margin: '0 0 32px',
-              }}
-            >
-              1,000,000 squares. {SQUARE_PRICE_DISPLAY} each. One per person,
-              ever. Upload a single photo and it is locked forever — no edits,
-              no second chances.
+
+            <p className="hero-sub enter enter-3">
+              A million people will each get to do this exactly once. Somewhere
+              in that million is your one square. What&apos;s the photo
+              you&apos;d actually want it to be?
             </p>
 
-            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center' }}>
+            <div className="hero-actions enter enter-4">
               <a className="btn" href="/claim">
-                Claim your square — {SQUARE_PRICE_DISPLAY}
+                Claim your square, {SQUARE_PRICE_DISPLAY}
               </a>
-              <a className="btn btn-ghost" href="#how">
+              <a className="link-quiet" href="#how">
                 How it works
+                <span aria-hidden="true">↓</span>
               </a>
             </div>
 
-            {/* Real numbers only. Nothing here is padded or pre-seeded. */}
-            <div
-              style={{
-                display: 'flex',
-                gap: 40,
-                flexWrap: 'wrap',
-                marginTop: 48,
-                paddingTop: 28,
-                borderTop: '1px solid var(--border)',
-              }}
-            >
-              <Stat
-                value={stats.claimed.toLocaleString('en-US')}
-                label={`of ${TOTAL_SQUARES.toLocaleString('en-US')} squares claimed`}
-              />
-              <Stat
-                value={stats.activeRegion.remaining.toLocaleString('en-US')}
-                label="left in the region open right now"
-              />
-            </div>
+            {/* A real count of real rows. Nothing here is padded, seeded or
+                rounded -- see getStats() in src/lib/wall/queries.ts. */}
+            <p className="hero-stat enter enter-5">
+              <span className="live-dot" aria-hidden="true" />
+              <span>
+                <ClaimedCount n={stats.claimed} />
+              </span>
+            </p>
           </div>
         </section>
 
-        {/* 2. The wall --------------------------------------------------- */}
-        <section className="section" style={{ paddingTop: 40 }}>
+        {/* 2. The wall ---------------------------------------------------
+            The one dark band on the page, and it earns itself: real
+            photographs need dark surroundings to read as photographs. */}
+        <section className="section-vault">
           <div className="wrap">
-            <h2>The wall</h2>
-            <p className="section-lede">
-              Every claimed square, exactly where it is. Squares fill outward
-              from the centre, so the earliest buyers really are closest to the
-              middle. Look around before you decide what yours will be.
+            <p className="eyebrow" style={{ marginBottom: 14 }}>
+              The wall
             </p>
+            <h2 style={{ fontSize: 'clamp(28px, 3.6vw, 38px)', margin: '0 0 10px' }}>
+              Every square that has been claimed.
+            </h2>
+            <p className="section-lede" style={{ marginBottom: 26 }}>
+              Squares fill outward from the centre, so the earliest buyers
+              really are closest to the middle.{' '}
+              <span className="num" style={{ color: 'var(--vault-ink)' }}>
+                {stats.activeRegion.remaining.toLocaleString('en-US')}
+              </span>{' '}
+              are left in the region open right now. Look around before you
+              decide what yours will be.
+            </p>
+
             <Wall
               storageBaseUrl={env.storagePublicBaseUrl}
               activeRing={stats.activeRegion.ring}
               initialCells={cells}
             />
-          </div>
-        </section>
 
-        {/* 3. Activity --------------------------------------------------- */}
-        <section className="section">
-          <div className="wrap">
-            <h2>Just claimed</h2>
-            <p className="section-lede">Real claims, as they happen.</p>
-            <div style={{ maxWidth: 640 }}>
-              <ActivityFeed initial={activity} />
+            {/* Live claims sit with the wall rather than in their own band --
+                they are the same product content, describing the same thing. */}
+            <div
+              style={{
+                marginTop: 44,
+                paddingTop: 28,
+                borderTop: '1px solid var(--vault-rule)',
+              }}
+            >
+              <p className="eyebrow" style={{ marginBottom: 16 }}>
+                Just claimed
+              </p>
+              <div style={{ maxWidth: 660 }}>
+                <ActivityFeed initial={activity} />
+              </div>
             </div>
           </div>
         </section>
 
-        {/* 4. How it works ----------------------------------------------- */}
-        <section className="section" id="how">
+        {/* 3. How it works ----------------------------------------------- */}
+        <section className="section" id="how" style={{ borderTop: 'none' }}>
           <div className="wrap">
-            <h2>How it works</h2>
-            <p className="section-lede">Three steps. The third one is permanent.</p>
-            <ol
-              style={{
-                listStyle: 'none',
-                padding: 0,
-                margin: 0,
-                display: 'grid',
-                gap: 18,
-                gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-              }}
-            >
+            <Reveal>
+              <p className="eyebrow" style={{ marginBottom: 14 }}>
+                How it works
+              </p>
+              <h2>Three steps. The third one is permanent.</h2>
+              <p className="section-lede">
+                You do not pick a spot and you do not get a second attempt.
+                Both of those are the point, not a limitation.
+              </p>
+            </Reveal>
+
+            <ol className="steps">
               <Step
                 n={1}
+                delay={0}
                 title="Get your square"
                 body="You do not pick a spot. The next square on the wall is assigned to you automatically, working outward from the centre."
               />
               <Step
                 n={2}
+                delay={60}
                 title={`Pay ${SQUARE_PRICE_DISPLAY}`}
                 body="One payment, once. No account, no subscription, no renewals. The square is permanently yours the moment you pay."
               />
               <Step
                 n={3}
+                delay={120}
                 title="Upload your one photo"
                 body={`You have ${UPLOAD_WINDOW_DAYS} days. Once you upload it, it is locked forever — there is no edit button, and there never will be. That is the whole point.`}
               />
@@ -152,54 +144,63 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* 5. FAQ -------------------------------------------------------- */}
+        {/* 4. FAQ --------------------------------------------------------- */}
         <section className="section">
           <div className="wrap">
-            <h2>Before you buy</h2>
-            <p className="section-lede">
-              The awkward questions, answered plainly and up front rather than
-              discovered afterwards.
-            </p>
-            <div style={{ maxWidth: '70ch', display: 'grid', gap: 4 }}>
-              <Faq q="Can I change my photo later?">
-                No. Not for any reason. Once you upload, it is locked
-                permanently — there is no edit or replace anywhere in the
-                product. This is the entire idea, not a limitation we plan to
-                fix.
+            <Reveal>
+              <p className="eyebrow" style={{ marginBottom: 14 }}>
+                Before you buy
+              </p>
+              <h2>The awkward questions, up front.</h2>
+              <p className="section-lede">
+                Answered plainly here rather than discovered afterwards.
+              </p>
+            </Reveal>
+
+            <Reveal delay={80}>
+              <Faq>
+                <FaqItem q="Can I change my photo later?">
+                  No. Not for any reason. Once you upload, it is locked
+                  permanently — there is no edit or replace anywhere in the
+                  product. This is the entire idea, not a limitation we plan to
+                  fix.
+                </FaqItem>
+                <FaqItem q="Can I buy more than one square?">
+                  No. One square per person, and nothing here will sell you a
+                  second one. There is no bulk option and no way to buy one for
+                  someone else.
+                </FaqItem>
+                <FaqItem
+                  q={`What happens if I don’t upload within ${UPLOAD_WINDOW_DAYS} days?`}
+                >
+                  You keep the square. Forever. It stays blank, showing a plain
+                  neutral tile, and it is never resold or given to anyone else.
+                  There is no refund.
+                </FaqItem>
+                <FaqItem q="Can I get a refund?">
+                  No, under any circumstances. Including if you never upload
+                  anything.
+                </FaqItem>
+                <FaqItem q="What can't I upload?">
+                  Sexually explicit content, illegal content, hate speech or
+                  harassment, scams and fraudulent claims, other people&apos;s
+                  private information, and anything that infringes someone
+                  else&apos;s copyright or trademark. The full{' '}
+                  <a href="/content-policy">content policy</a> has the detail. A
+                  moderator reviews content after it goes live and can remove
+                  anything that breaks these rules.
+                </FaqItem>
+                <FaqItem q="If my content is removed, do I get my square back?">
+                  The square stays permanently yours — it is simply blank again,
+                  and cannot be re-uploaded. No refund, and it is never resold.
+                </FaqItem>
+                <FaqItem q="Do I need an account?">
+                  No. There are no accounts here at all. After paying you get a
+                  permanent link to your square, and it is emailed to you. That
+                  link is how you find it again.
+                </FaqItem>
               </Faq>
-              <Faq q="Can I buy more than one square?">
-                No. One square per person, and nothing here will sell you a
-                second one. There is no bulk option and no way to buy one for
-                someone else.
-              </Faq>
-              <Faq q={`What happens if I don’t upload within ${UPLOAD_WINDOW_DAYS} days?`}>
-                You keep the square. Forever. It stays blank, showing a plain
-                neutral tile, and it is never resold or given to anyone else.
-                There is no refund.
-              </Faq>
-              <Faq q="Can I get a refund?">
-                No, under any circumstances. Including if you never upload
-                anything.
-              </Faq>
-              <Faq q="What can't I upload?">
-                Sexually explicit content, illegal content, hate speech or
-                harassment, scams and fraudulent claims, other people&apos;s
-                private information, and anything that infringes someone
-                else&apos;s copyright or trademark. The full{' '}
-                <a href="/content-policy">content policy</a> has the detail. A
-                moderator reviews content after it goes live and can remove
-                anything that breaks these rules.
-              </Faq>
-              <Faq q="If my content is removed, do I get my square back?">
-                The square stays permanently yours — it is simply blank again,
-                and cannot be re-uploaded. No refund, and it is never resold.
-              </Faq>
-              <Faq q="Do I need an account?">
-                No. There are no accounts here at all. After paying you get a
-                permanent link to your square, and it is emailed to you. That
-                link is how you find it again.
-              </Faq>
-            </div>
+            </Reveal>
           </div>
         </section>
       </main>
@@ -209,48 +210,41 @@ export default async function HomePage() {
   )
 }
 
-function Stat({ value, label }: { value: string; label: string }) {
+/**
+ * The live claimed count.
+ *
+ * Wired straight to the real row count, including when that count is zero --
+ * "0 people have already claimed theirs" is a true sentence, and a fabricated
+ * starting number is the one thing this product cannot afford. Only the
+ * singular is special-cased, because "1 people" is a bug rather than a number.
+ */
+function ClaimedCount({ n }: { n: number }) {
   return (
-    <div>
-      <div style={{ fontSize: 30, fontWeight: 650, letterSpacing: '-.02em' }}>{value}</div>
-      <div style={{ color: 'var(--text-faint)', fontSize: 14, marginTop: 2 }}>{label}</div>
-    </div>
+    <>
+      <strong className="num">{n.toLocaleString('en-US')}</strong>{' '}
+      {n === 1 ? 'person has' : 'people have'} already claimed theirs.
+    </>
   )
 }
 
-function Step({ n, title, body }: { n: number; title: string; body: string }) {
+function Step({
+  n,
+  title,
+  body,
+  delay,
+}: {
+  n: number
+  title: string
+  body: string
+  delay: number
+}) {
   return (
-    <li className="card">
-      <div style={{ color: 'var(--text-faint)', fontSize: 13, marginBottom: 10 }}>
-        Step {n}
+    <Reveal as="li" className="step" delay={delay}>
+      <div className="step-n" aria-hidden="true">
+        {n}
       </div>
-      <h3 style={{ margin: '0 0 8px', fontSize: 17 }}>{title}</h3>
-      <p style={{ margin: 0, color: 'var(--text-dim)', lineHeight: 1.65, fontSize: 15 }}>
-        {body}
-      </p>
-    </li>
-  )
-}
-
-function Faq({ q, children }: { q: string; children: React.ReactNode }) {
-  return (
-    <details
-      style={{
-        borderBottom: '1px solid var(--border)',
-        padding: '16px 0',
-      }}
-    >
-      <summary style={{ cursor: 'pointer', fontWeight: 600, fontSize: 16 }}>{q}</summary>
-      <div
-        style={{
-          color: 'var(--text-dim)',
-          lineHeight: 1.7,
-          marginTop: 10,
-          fontSize: 15,
-        }}
-      >
-        {children}
-      </div>
-    </details>
+      <h3>{title}</h3>
+      <p>{body}</p>
+    </Reveal>
   )
 }

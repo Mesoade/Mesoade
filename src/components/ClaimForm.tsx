@@ -45,7 +45,7 @@ export default function ClaimForm() {
   return (
     <form onSubmit={submit}>
       {error && (
-        <div className="error">
+        <div className="error enter-soft">
           {error}
           {existing !== null && (
             <>

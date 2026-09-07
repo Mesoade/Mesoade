@@ -79,7 +79,7 @@ export default function UploadForm({ squareIndex, token, sessionId }: Props) {
 
   return (
     <form onSubmit={submit}>
-      {error && <div className="error">{error}</div>}
+      {error && <div className="error enter-soft">{error}</div>}
 
       {/*
         The prompt at the moment of upload shapes what people submit far more
@@ -137,7 +137,7 @@ export default function UploadForm({ squareIndex, token, sessionId }: Props) {
       </p>
 
       {preview && (
-        <div style={{ marginBottom: 22 }}>
+        <div className="enter-photo" style={{ marginBottom: 22 }}>
           <div style={{ fontSize: 13, color: 'var(--text-faint)', marginBottom: 8 }}>
             {fileName}
           </div>

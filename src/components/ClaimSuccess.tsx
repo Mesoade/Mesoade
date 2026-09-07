@@ -50,8 +50,14 @@ export default function ClaimSuccess({ sessionId }: { sessionId: string | null }
   }, [sessionId])
 
   if (state === 'assigned' && squareIndex !== null) {
+    /*
+     * This swap happens once in a person's life, after a wait they have been
+     * watching. Letting the answer fade up rather than replacing the "assigning
+     * your square" text between two frames is the whole delight budget for this
+     * flow, and it is spent here rather than on the marketing page.
+     */
     return (
-      <>
+      <div className="enter-photo">
         <h1 style={{ fontSize: 34, letterSpacing: '-.025em', margin: '0 0 12px' }}>
           Square {formatSquareLabel(squareIndex)} is yours.
         </h1>
@@ -76,7 +82,7 @@ export default function ClaimSuccess({ sessionId }: { sessionId: string | null }
           We&apos;ve emailed you this link too, so you can close this tab and
           come back when you&apos;ve decided.
         </p>
-      </>
+      </div>
     )
   }
 

@@ -1,141 +1,951 @@
-/* A Million Squares — one dark, quiet surface so the wall is the only thing
-   competing for attention. */
+/* A Million Squares
+   -----------------------------------------------------------------------
+   Ink on archival paper.
+
+   Permanence in the physical world is pigment on a surface -- ink on paper,
+   ochre on stone, an engraved plaque -- not backlit glass. So the marketing
+   surfaces are a warm ivory ground with warm-black ink, and only the wall
+   itself drops into a deep warm "vault" tone, because photographs need dark
+   surroundings to read as photographs rather than as UI tiles.
+
+   Every colour here carries a hue bias toward warm. Neutral grays are what
+   made the previous build read as a dashboard; there are none left. */
 
 :root {
-  --bg: #0f0f10;
-  --bg-raised: #17171a;
-  --bg-input: #1d1d21;
-  --border: #2a2a2f;
-  --border-strong: #3a3a42;
-  --text: #e8e8ea;
-  --text-dim: #b8b8c0;
-  --text-faint: #8a8a94;
-  --accent: #e8e8ea;
-  --accent-ink: #0f0f10;
-  /* The neutral treatment for a square that was paid for but never filled in,
-     or whose content a moderator removed. A plain colour, never an empty hole:
-     the wall should never look broken where content did not show up. */
-  --square-blank: #2e2e35;
-  --square-locked: #191920;
-  --danger: #e5484d;
-  --radius: 10px;
+  color-scheme: light;
+
+  /* -- Paper: the marketing surfaces ---------------------------------- */
+  --paper: #faf6ef; /* uncoated archival stock, never #fff */
+  --paper-raised: #f4ede2; /* cards and wells sit one warm step deeper */
+  --paper-sunk: #ede4d6; /* inputs read as pressed into the page */
+  --rule: #e0d5c4; /* warm hairline; gray rules look like dirt here */
+  --rule-strong: #cdbfaa;
+
+  /* -- Ink: text. Contrast on --paper noted; all clear WCAG AA. ------- */
+  --ink: #1c1714; /* 16.5:1 -- warm near-black, never #000 */
+  --ink-2: #57493d; /* 8.0:1  -- body and secondary */
+  --ink-3: #7a6a59; /* 4.8:1  -- meta and labels, still AA at 13px */
+
+  /* -- Ember: the accent ---------------------------------------------
+     Red ochre is the oldest pigment humans used to make a permanent mark.
+     That is not a metaphor for this product, it is the same act. */
+  --ember-deep: #9c3d1b; /* 6.8:1 with white, 6.3:1 on paper */
+  --ember: #c2542b;
+  --ember-light: #e08a5f; /* 6.5:1 on the vault ground */
+  --ember-wash: #f7e7da;
+
+  /* -- Patina: verdigris, time made visible. Used twice a page, at most. */
+  --patina: #2f5d53; /* 6.9:1 on paper */
+  --patina-wash: #e2ece8;
+
+  /* -- Vault: the wall section only ----------------------------------- */
+  --vault: #211a15;
+  --vault-raised: #2c231c;
+  --vault-sunk: #191310;
+  --vault-ink: #e9dfd1; /* 13.0:1 on --vault */
+  --vault-dim: #a8988a;
+  --vault-rule: #3a2f27;
+
+  /* -- Wall canvas ----------------------------------------------------
+     Read directly by the canvas renderer, so these must stay literal hex
+     values rather than var() aliases. */
+  --wall-bg: #1b1511;
+  --wall-locked: #28201a; /* not-yet-unlocked ground, textured with dots */
+  --wall-open: #322820; /* inside the frontier: open, untextured, claimable */
+  --wall-dot: #46372a;
+  /* Paid for, never filled -- or content removed. Deliberately lighter than
+     both the open field and the locked ground: a blank square must read as a
+     tile someone owns, not as a hole in the mosaic. */
+  --wall-blank: #544639;
+  --wall-tile: #c9a98c; /* a filled square, zoomed too far out for images */
+  --wall-ring: #c2542b; /* the live frontier */
+
+  --danger: #a32b22;
+  --danger-wash: #f8e4e1;
+
+  /* -- Elevation. Warm-tinted; black shadows go muddy on warm paper. --- */
+  --shadow-sm: 0 1px 2px rgba(58, 34, 18, 0.1), 0 2px 6px rgba(58, 34, 18, 0.06);
+  --shadow-md: 0 1px 2px rgba(58, 34, 18, 0.08), 0 6px 16px -6px rgba(58, 34, 18, 0.16);
+  --shadow-btn: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 1px 2px rgba(58, 34, 18, 0.24),
+    0 6px 14px -4px rgba(58, 34, 18, 0.3);
+  --shadow-lift: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 2px 4px rgba(58, 34, 18, 0.22),
+    0 12px 22px -6px rgba(58, 34, 18, 0.34);
+  --shadow-press: inset 0 1px 3px rgba(48, 18, 6, 0.38), 0 1px 1px rgba(58, 34, 18, 0.18);
+
+  /* -- Motion. The built-in CSS easings are too weak to read as intent. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+
+  --r-sm: 8px;
+  --r: 12px;
+  --r-btn: 14px;
+  --r-lg: 18px;
+  --radius: 12px;
   --maxw: 1120px;
+
+  /* -- Legacy aliases -------------------------------------------------
+     The claim, upload, square, admin and policy pages all address the old
+     token names. Re-pointing them here rethemes the entire site from one
+     place instead of touching thirty inline styles. */
+  --bg: var(--paper);
+  --bg-raised: var(--paper-raised);
+  --bg-input: var(--paper-sunk);
+  --border: var(--rule);
+  --border-strong: var(--rule-strong);
+  --text: var(--ink);
+  --text-dim: var(--ink-2);
+  --text-faint: var(--ink-3);
+  --accent: var(--ember-deep);
+  --accent-ink: #fff8f2;
+  /* The neutral treatment for a square that was paid for but never filled
+     in, or whose content a moderator removed. A plain colour, never an
+     empty hole. On paper pages it is a paper tone; the canvas uses
+     --wall-blank instead. */
+  --square-blank: #dccfbb;
+  --square-locked: #e6dccb;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 16px;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-a { color: var(--text-dim); }
-a:hover { color: var(--text); }
+::selection {
+  background: var(--ember-wash);
+  color: var(--ember-deep);
+}
 
-.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 20px; }
+a {
+  color: var(--ember-deep);
+  text-decoration-color: color-mix(in srgb, var(--ember-deep) 35%, transparent);
+  text-underline-offset: 3px;
+  transition: color 140ms ease, text-decoration-color 140ms ease;
+}
+a:hover {
+  color: var(--ember);
+  text-decoration-color: currentColor;
+}
+
+.wrap {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* -- Type ------------------------------------------------------------
+   Fraunces carries the identity. It has SOFT and WONK axes drawn to make
+   it feel handmade rather than neutral, which is the whole job here given
+   there is no photography or illustration anywhere on these sections. */
+
+h1,
+h2,
+h3,
+.display {
+  font-family: var(--font-display), Georgia, 'Times New Roman', serif;
+  font-variation-settings: 'SOFT' 40, 'WONK' 1, 'opsz' 96;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.eyebrow {
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0;
+}
+
+/* Anything that is a record -- a count, an index, a timestamp -- gets the
+   ledger voice. Tabular figures so a live count does not jitter as it
+   ticks over. */
+.num {
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-feature-settings: 'tnum' 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* -- Buttons ---------------------------------------------------------
+   Physical, not flat: a vertical gradient so light falls from above, an
+   inset top highlight for the bevel, a warm cast shadow, a 1.5px lift on
+   hover and a real press. */
 
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  background: var(--accent);
-  color: var(--accent-ink);
-  border: 1px solid var(--accent);
-  border-radius: var(--radius);
-  padding: 13px 22px;
-  font-size: 16px;
-  font-weight: 650;
+  gap: 9px;
+  /* Colour lives in background-color so it can actually interpolate; the
+     gradient on top is translucent, so it rides over whatever that colour is.
+     A gradient-to-gradient transition does not animate in any engine, which is
+     why the enabled/disabled swap used to snap. */
+  background-color: var(--ember-deep);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(0, 0, 0, 0.05) 100%);
+  color: #fff8f2;
+  border: none;
+  border-radius: var(--r-btn);
+  padding: 15px 26px;
+  font-family: inherit;
+  font-size: 16.5px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  line-height: 1;
   text-decoration: none;
   cursor: pointer;
-  transition: opacity .15s ease;
+  box-shadow: var(--shadow-btn);
+  transform: translateY(0);
+  transition: transform 160ms var(--ease-out), box-shadow 160ms var(--ease-out),
+    background-color 200ms ease, filter 160ms ease;
 }
-.btn:hover { opacity: .88; color: var(--accent-ink); }
-.btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* Touch devices fire :hover on tap, which would leave the button stuck in
+   its lifted state after a press. */
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover {
+    transform: translateY(-1.5px);
+    box-shadow: var(--shadow-lift);
+    filter: saturate(1.06) brightness(1.04);
+  }
+}
+
+.btn:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: var(--shadow-press);
+  filter: none;
+  /* This shortens the press itself, not the release: feedback has to land the
+     instant the finger does. Letting go runs on the base 160ms, so the button
+     rises back rather than snapping. */
+  transition-duration: 90ms;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--ember-deep);
+  outline-offset: 3px;
+}
+
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  background-color: var(--rule-strong);
+  color: #fff8f2;
+  box-shadow: var(--shadow-sm);
+  transform: none;
+  filter: none;
+  cursor: not-allowed;
+}
 
 .btn-ghost {
-  background: transparent;
-  color: var(--text-dim);
-  border-color: var(--border-strong);
+  background: var(--paper-raised);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--rule-strong), var(--shadow-sm);
 }
-.btn-ghost:hover { color: var(--text); background: var(--bg-input); }
+@media (hover: hover) and (pointer: fine) {
+  .btn-ghost:hover {
+    background: var(--paper-sunk);
+    color: var(--ink);
+    filter: none;
+    box-shadow: inset 0 0 0 1px var(--rule-strong), var(--shadow-md);
+  }
+}
+.btn-ghost:active {
+  box-shadow: inset 0 1px 3px rgba(58, 34, 18, 0.16);
+}
 
-.field { display: block; margin-bottom: 16px; }
+/* A quiet secondary action: no chrome at all until you touch it. The
+   underline grows from the left rather than fading, so the motion has a
+   direction. */
+.link-quiet {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ink-2);
+  text-decoration: none;
+  padding: 4px 2px;
+  transition: color 160ms ease;
+}
+.link-quiet::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  bottom: 0;
+  height: 1.5px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 220ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .link-quiet:hover {
+    color: var(--ink);
+  }
+  .link-quiet:hover::after {
+    transform: scaleX(1);
+  }
+}
+.link-quiet:focus-visible {
+  outline: 2px solid var(--ember-deep);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* -- Forms ------------------------------------------------------------ */
+
+.field {
+  display: block;
+  margin-bottom: 18px;
+}
 .field > span {
   display: block;
-  font-size: 13px;
-  color: var(--text-faint);
-  margin-bottom: 6px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+  margin-bottom: 7px;
 }
-.field input[type="text"],
-.field input[type="email"],
-.field input[type="url"],
+.field input[type='text'],
+.field input[type='email'],
+.field input[type='url'],
 .field select,
 .field textarea {
   width: 100%;
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  color: var(--text);
-  padding: 11px 13px;
+  background: var(--paper-sunk);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--r-sm);
+  color: var(--ink);
+  padding: 12px 14px;
   font: inherit;
   font-size: 15px;
+  box-shadow: inset 0 1px 2px rgba(58, 34, 18, 0.06);
+  transition: border-color 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
 }
-.field textarea { resize: vertical; min-height: 84px; }
-.field input:focus, .field select:focus, .field textarea:focus {
-  outline: 2px solid var(--border-strong);
-  outline-offset: -1px;
+.field textarea {
+  resize: vertical;
+  min-height: 88px;
+  line-height: 1.6;
 }
-.hint { font-size: 13px; color: var(--text-faint); line-height: 1.55; margin: 6px 0 0; }
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  outline: none;
+  background: #fffdf9;
+  border-color: var(--ember-deep);
+  box-shadow: inset 0 1px 2px rgba(58, 34, 18, 0.04),
+    0 0 0 3px color-mix(in srgb, var(--ember-deep) 16%, transparent);
+}
+.field input[type='checkbox'] {
+  accent-color: var(--ember-deep);
+  width: 16px;
+  height: 16px;
+}
+
+.hint {
+  font-size: 13.5px;
+  color: var(--ink-3);
+  line-height: 1.6;
+  margin: 7px 0 0;
+}
 
 .card {
-  background: var(--bg-raised);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 26px;
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-sm);
 }
 
 .error {
-  background: rgba(229, 72, 77, .1);
-  border: 1px solid rgba(229, 72, 77, .35);
-  color: #ff9ba0;
-  border-radius: 8px;
-  padding: 11px 14px;
-  font-size: 14px;
-  margin-bottom: 16px;
+  background: var(--danger-wash);
+  border: 1px solid color-mix(in srgb, var(--danger) 28%, transparent);
+  color: var(--danger);
+  border-radius: var(--r-sm);
+  padding: 12px 15px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  margin-bottom: 18px;
 }
 
-.section { padding: 72px 0; border-top: 1px solid var(--border); }
-.section h2 { font-size: 26px; margin: 0 0 8px; letter-spacing: -.01em; }
-.section-lede { color: var(--text-dim); margin: 0 0 30px; line-height: 1.6; max-width: 62ch; }
+/* -- Sections --------------------------------------------------------- */
 
-.prose { max-width: 68ch; line-height: 1.72; color: var(--text-dim); }
-.prose h1 { color: var(--text); font-size: 30px; letter-spacing: -.02em; margin: 0 0 6px; }
-.prose h2 { color: var(--text); font-size: 19px; margin: 34px 0 10px; }
-.prose h3 { color: var(--text); font-size: 16px; margin: 24px 0 8px; }
-.prose li { margin-bottom: 7px; }
-.prose strong { color: var(--text); }
+.section {
+  padding: 84px 0;
+  border-top: 1px solid var(--rule);
+}
+.section h2 {
+  font-size: clamp(28px, 3.6vw, 38px);
+  margin: 0 0 10px;
+}
+.section-lede {
+  color: var(--ink-2);
+  margin: 0 0 34px;
+  line-height: 1.62;
+  max-width: 58ch;
+  font-size: 17px;
+}
+
+/* The one dark band on the page. It earns itself functionally: real
+   photographs need dark surroundings to read as photographs. */
+.section-vault {
+  background: var(--vault);
+  color: var(--vault-ink);
+  padding: 84px 0;
+  border-top: none;
+}
+.section-vault h2,
+.section-vault h3 {
+  color: var(--vault-ink);
+}
+.section-vault .section-lede,
+.section-vault .hint {
+  color: var(--vault-dim);
+}
+.section-vault .eyebrow {
+  color: var(--vault-dim);
+}
+.section-vault a {
+  color: var(--ember-light);
+}
+.section-vault a:hover {
+  color: #f0a883;
+}
+.section-vault .field > span {
+  color: var(--vault-dim);
+}
+.section-vault .field select {
+  background: var(--vault-raised);
+  border-color: var(--vault-rule);
+  color: var(--vault-ink);
+  box-shadow: none;
+}
+.section-vault .field select:focus {
+  background: var(--vault-raised);
+  border-color: var(--ember-light);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ember-light) 20%, transparent);
+}
+
+/* -- Prose (policy pages) --------------------------------------------- */
+
+.prose {
+  max-width: 68ch;
+  line-height: 1.75;
+  color: var(--ink-2);
+  font-size: 16.5px;
+}
+.prose h1 {
+  font-size: clamp(30px, 4vw, 40px);
+  margin: 0 0 8px;
+}
+.prose h2 {
+  font-size: 22px;
+  margin: 38px 0 10px;
+}
+.prose h3 {
+  font-size: 17px;
+  margin: 26px 0 8px;
+}
+.prose li {
+  margin-bottom: 8px;
+}
+.prose strong {
+  color: var(--ink);
+  font-weight: 600;
+}
 .prose code {
-  background: var(--bg-input);
-  border: 1px solid var(--border);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  background: var(--paper-sunk);
+  border: 1px solid var(--rule);
   border-radius: 5px;
   padding: 1px 6px;
-  font-size: .9em;
+  font-size: 0.88em;
 }
 .placeholder-note {
-  background: rgba(229, 178, 72, .08);
-  border: 1px solid rgba(229, 178, 72, .3);
-  color: #e8c88a;
-  border-radius: 8px;
-  padding: 12px 15px;
+  background: var(--ember-wash);
+  border: 1px solid color-mix(in srgb, var(--ember-deep) 26%, transparent);
+  color: #7d3116;
+  border-radius: var(--r-sm);
+  padding: 13px 16px;
   font-size: 14px;
   line-height: 1.6;
 }
 
+/* -- Hero ------------------------------------------------------------- */
+
+.hero {
+  padding: clamp(72px, 11vw, 128px) 0 clamp(56px, 7vw, 88px);
+}
+
+.hero-title {
+  font-size: clamp(44px, 7.6vw, 84px);
+  line-height: 0.98;
+  letter-spacing: -0.032em;
+  margin: 28px 0 0;
+  max-width: 13ch;
+}
+
+/* The single colour moment in the hero, and it lands on the word the
+   entire product rests on. WONK and a steeper optical size make it lean
+   away from the roman around it. */
+.hero-forever {
+  display: block;
+  color: var(--ember-deep);
+  font-style: italic;
+  font-variation-settings: 'SOFT' 60, 'WONK' 1, 'opsz' 144;
+}
+
+.hero-sub {
+  font-size: clamp(17.5px, 1.5vw, 19.5px);
+  line-height: 1.62;
+  color: var(--ink-2);
+  max-width: 54ch;
+  margin: 26px 0 0;
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex-wrap: wrap;
+  margin-top: 38px;
+}
+
+.hero-stat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 30px 0 0;
+  font-size: 15px;
+  color: var(--ink-3);
+  line-height: 1.5;
+}
+.hero-stat strong {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* A slow breath, not a blink. Three seconds is long enough to read as
+   "something is alive here" without ever pulling the eye off the copy. */
+.live-dot {
+  position: relative;
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--patina);
+}
+/* The ring is a scaled pseudo-element rather than an animated box-shadow
+   spread. This animation never stops, and an animated shadow repaints the
+   element on every frame of every one of those seconds; transform and opacity
+   stay on the compositor. */
+.live-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid var(--patina);
+  animation: breath 3s var(--ease-out) infinite;
+}
+@keyframes breath {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  70%,
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+/* -- Steps ------------------------------------------------------------ */
+
+.steps {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(268px, 1fr));
+}
+
+/* The card owns both its scroll-in and its hover lift, rather than wearing
+   the generic .reveal class -- two rules animating the same transform at
+   equal specificity is how a hover lift silently stops working. */
+.step {
+  position: relative;
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-lg);
+  padding: 26px 26px 28px;
+  box-shadow: var(--shadow-sm);
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 520ms var(--ease-out), transform 300ms var(--ease-out),
+    box-shadow 260ms var(--ease-out);
+}
+.step[data-visible='true'] {
+  opacity: 1;
+  transform: translateY(0);
+  /* Once revealed the card is a hover target, not an entrance: 300ms is the
+     travel time for the scroll-in and far too slow for a pointer. */
+  transition: transform 220ms var(--ease-out), box-shadow 220ms var(--ease-out),
+    opacity 520ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .step[data-visible='true']:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+}
+.step-n {
+  font-family: var(--font-display), Georgia, serif;
+  font-variation-settings: 'SOFT' 20, 'WONK' 1, 'opsz' 144;
+  font-size: 46px;
+  line-height: 1;
+  color: var(--ember-deep);
+  opacity: 0.32;
+  margin-bottom: 14px;
+}
+.step h3 {
+  font-size: 20px;
+  margin: 0 0 9px;
+}
+.step p {
+  margin: 0;
+  color: var(--ink-2);
+  line-height: 1.68;
+  font-size: 15.5px;
+}
+/* The third step is the one that is irreversible, so it is the one that
+   gets the accent edge. */
+.step:last-child {
+  border-color: color-mix(in srgb, var(--ember-deep) 30%, var(--rule));
+  background: linear-gradient(180deg, var(--ember-wash) 0%, var(--paper-raised) 62%);
+}
+.step:last-child .step-n {
+  opacity: 0.55;
+}
+
+/* -- FAQ -------------------------------------------------------------- */
+
+.faq {
+  max-width: 72ch;
+  border-top: 1px solid var(--rule);
+}
+
+.faq-item {
+  border-bottom: 1px solid var(--rule);
+}
+
+.faq-trigger {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 20px 8px 20px 2px;
+  margin: 0;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 17px;
+  font-weight: 550;
+  font-variation-settings: normal;
+  letter-spacing: 0;
+  color: var(--ink);
+  text-align: left;
+  line-height: 1.45;
+  cursor: pointer;
+  border-radius: var(--r-sm);
+  transition: color 140ms ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .faq-trigger:hover {
+    color: var(--ember-deep);
+  }
+}
+.faq-trigger:focus-visible {
+  outline: 2px solid var(--ember-deep);
+  outline-offset: 2px;
+}
+
+/* A plus that becomes a minus. The horizontal bar never moves, so the eye
+   tracks one rotating stroke instead of a whole icon swapping out. */
+.faq-icon {
+  position: relative;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 4px;
+  color: var(--ink-3);
+  transition: color 160ms ease;
+}
+.faq-icon::before,
+.faq-icon::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 15px;
+  height: 1.75px;
+  border-radius: 2px;
+  background: currentColor;
+  transform: translate(-50%, -50%);
+}
+.faq-icon::after {
+  transition: transform 300ms var(--ease-out);
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+.faq-item[data-open='true'] .faq-icon {
+  color: var(--ember-deep);
+}
+.faq-item[data-open='true'] .faq-icon::after {
+  transform: translate(-50%, -50%) rotate(0deg);
+}
+
+/* grid-template-rows 0fr -> 1fr animates to the panel's natural height
+   with no JS measurement, and unlike a keyframe it retargets mid-flight
+   when someone toggles twice quickly. */
+.faq-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 240ms var(--ease-out);
+}
+.faq-item[data-open='true'] .faq-panel {
+  grid-template-rows: 1fr;
+  transition-duration: 300ms;
+}
+.faq-panel > .faq-panel-inner {
+  overflow: hidden;
+  min-height: 0;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 140ms ease, transform 240ms var(--ease-out);
+}
+.faq-item[data-open='true'] .faq-panel > .faq-panel-inner {
+  opacity: 1;
+  transform: translateY(0);
+  /* Hold the text back until the box has somewhere to put it. */
+  transition: opacity 200ms ease 90ms, transform 300ms var(--ease-out) 60ms;
+}
+.faq-answer {
+  color: var(--ink-2);
+  line-height: 1.72;
+  font-size: 15.5px;
+  padding: 0 40px 22px 2px;
+  margin: 0;
+}
+
+/* -- Activity feed ----------------------------------------------------
+   Lives inside the vault band, so its colours come from classes rather
+   than inline styles -- an inline colour would win over the band's
+   overrides and render dark ink on a dark ground. */
+
+.feed {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.feed-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 15px;
+  color: var(--ink-2);
+}
+.feed-row:last-child {
+  border-bottom: none;
+}
+.feed-link {
+  color: var(--ink);
+  font-weight: 500;
+}
+.feed-meta {
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+.section-vault .feed-row {
+  border-bottom-color: var(--vault-rule);
+  color: var(--vault-dim);
+}
+.section-vault .feed-link {
+  color: var(--vault-ink);
+}
+.section-vault .feed-link:hover {
+  color: var(--ember-light);
+}
+.section-vault .feed-meta {
+  color: #8d7f72;
+}
+
+/* -- Scroll reveal ----------------------------------------------------- */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 520ms var(--ease-out), transform 460ms var(--ease-out);
+}
+.reveal[data-visible='true'] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* -- Hero entrance -----------------------------------------------------
+   Above the fold and seen once per visit, so it can afford to be a little
+   generous. Stagger stays short; a slow cascade reads as a slow site. */
+.enter {
+  opacity: 0;
+  animation: enter 620ms var(--ease-out) forwards;
+}
+.enter-1 {
+  animation-delay: 40ms;
+}
+.enter-2 {
+  animation-delay: 100ms;
+}
+.enter-3 {
+  animation-delay: 170ms;
+}
+.enter-4 {
+  animation-delay: 240ms;
+}
+.enter-5 {
+  animation-delay: 320ms;
+}
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* -- Entrances for content that would otherwise teleport in -------------
+   @starting-style gives an element a "before" state without a mounted flag
+   and a re-render, so these are pure CSS. Browsers without it simply show
+   the content immediately, which is exactly today's behaviour. */
+
+.enter-soft {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 260ms var(--ease-out), transform 260ms var(--ease-out);
+}
+@starting-style {
+  .enter-soft {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+/* The upload preview and the "your square is yours" moment. Each happens
+   exactly once per person, ever, which is the one place a slightly longer,
+   slightly more generous beat is earned. Starting at 0.96 rather than 0:
+   nothing in the real world appears from nothing. */
+.enter-photo {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 340ms var(--ease-out), transform 340ms var(--ease-out);
+}
+@starting-style {
+  .enter-photo {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+@starting-style {
+  .feed-row {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+.feed-row {
+  transition: opacity 260ms var(--ease-out), transform 260ms var(--ease-out);
+}
+
+/* Nothing on this page may depend on JavaScript to become visible. */
+@media (scripting: none) {
+  .reveal,
+  .step,
+  .enter {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+}
+
+/* -- Reduced motion ---------------------------------------------------
+   Reduced motion means fewer and gentler animations, not none. Opacity and
+   colour still carry meaning -- the accordion still fades, the button
+   still responds -- but nothing translates, scales or pulses. */
 @media (prefers-reduced-motion: reduce) {
-  * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  .btn,
+  .btn:hover,
+  .btn:active,
+  .step:hover {
+    transform: none;
+  }
+  .live-dot::after {
+    animation: none;
+    opacity: 0.45;
+  }
+  .link-quiet::after {
+    transition: opacity 140ms ease;
+    transform: scaleX(1);
+    opacity: 0;
+  }
+  .link-quiet:hover::after {
+    opacity: 1;
+  }
+  .reveal,
+  .enter {
+    opacity: 1;
+    transform: none;
+    animation: none;
+    transition: none;
+  }
+  /* The fades stay -- they explain that something arrived -- the travel goes. */
+  .enter-soft,
+  .enter-photo,
+  .feed-row {
+    transform: none;
+    transition: opacity 200ms ease;
+  }
+  .step {
+    opacity: 1;
+    transform: none;
+    transition: box-shadow 260ms ease;
+  }
+  /* The panel's height snaps, but the answer still fades in: that fade is
+     what tells someone the content is new, and it involves no movement. */
+  .faq-panel,
+  .faq-icon::after {
+    transition-duration: 1ms;
+  }
+  .faq-panel > .faq-panel-inner,
+  .faq-item[data-open='true'] .faq-panel > .faq-panel-inner {
+    transform: none;
+    transition: opacity 160ms ease;
+  }
 }

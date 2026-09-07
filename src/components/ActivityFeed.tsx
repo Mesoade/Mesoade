@@ -55,36 +55,28 @@ export default function ActivityFeed({ initial }: { initial: Item[] }) {
     )
   }
 
+  /*
+   * Colours come from classes, not inline styles: this feed renders on the
+   * dark wall band, where an inline `color: var(--text)` would win over the
+   * band's overrides and paint dark ink on a dark ground.
+   */
   return (
-    <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+    <ul className="feed">
       {items.map((item) => (
-        <li
-          key={item.index}
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            gap: 16,
-            padding: '11px 0',
-            borderBottom: '1px solid var(--border)',
-            fontSize: 15,
-          }}
-        >
+        <li key={item.index} className="feed-row">
           <span>
             Someone claimed square{' '}
-            <a href={`/s/${item.index}`} style={{ color: 'var(--text)' }}>
+            <a href={`/s/${item.index}`} className="feed-link num">
               {formatSquareLabel(item.index)}
             </a>
             {item.category && (
-              <span style={{ color: 'var(--text-faint)' }}>
+              <span className="feed-meta">
                 {' · '}
                 {categoryLabel(item.category)}
               </span>
             )}
           </span>
-          <span
-            style={{ color: 'var(--text-faint)', whiteSpace: 'nowrap' }}
-            suppressHydrationWarning
-          >
+          <span className="feed-meta num" suppressHydrationWarning>
             {mounted ? relativeTime(item.claimedAt) : absoluteDate(item.claimedAt)}
           </span>
         </li>
