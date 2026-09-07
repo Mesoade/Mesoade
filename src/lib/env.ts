@@ -112,4 +112,16 @@ export const UPLOAD_WINDOW_DAYS = 7
 export const TIME_CAPSULE_YEARS = [1, 5, 10, 25] as const
 
 export const BRAND_NAME = 'A Million Squares'
+
+/**
+ * The name shown on the Stripe Checkout page and on the buyer's card receipt.
+ *
+ * Deliberately separate from BRAND_NAME, and currently different from it. Worth
+ * knowing why that is a risk rather than a feature: people check that the name
+ * taking their money matches the site they are on, and a mismatch at the card
+ * field is a well-known cause of abandoned checkouts and of chargebacks raised
+ * as "I don't recognise this charge". Set both to the same string once the
+ * public name is settled.
+ */
+export const CHECKOUT_BRAND_NAME = 'Themillionsquares'
 export const BRAND_TAGLINE = 'You get one. Forever. Choose wisely.'

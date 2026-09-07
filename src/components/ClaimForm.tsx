@@ -69,12 +69,8 @@ export default function ClaimForm() {
           placeholder="you@example.com"
         />
       </label>
-      <p className="hint" style={{ marginTop: -10, marginBottom: 18 }}>
-        Used for your receipt and for the link back to your square. There are no
-        accounts, so this email is the only way to find your square again.
-      </p>
 
-      <label className="field">
+      <label className="field" style={{ marginTop: 18 }}>
         <span>
           Leave a note for your future self <em style={{ color: 'var(--text-faint)' }}>(optional)</em>
         </span>
@@ -86,10 +82,8 @@ export default function ClaimForm() {
         />
       </label>
       <p className="hint" style={{ marginTop: -10, marginBottom: 22 }}>
-        We&apos;ll email it back to you in 1, 5, 10, and 25 years. We&apos;ll do
-        our best to reach you — but a quarter of a century is a long time for an
-        email address to survive, so treat it as a nice intention rather than a
-        promise.
+        We&apos;ll email it back to you in 1, 5, 10, and 25 years with this
+        note.
       </p>
 
       <label
@@ -111,19 +105,15 @@ export default function ClaimForm() {
           required
         />
         <span>
-          I&apos;m 18 or over, and I understand that my photo is{' '}
+          I&apos;m 18 or over, and I understand my photo is{' '}
           <strong style={{ color: 'var(--text)' }}>locked forever</strong> once
-          uploaded, that I get{' '}
-          <strong style={{ color: 'var(--text)' }}>exactly one square</strong>,
-          and that there are{' '}
-          <strong style={{ color: 'var(--text)' }}>no refunds</strong> for any
-          reason. I agree to the <a href="/terms">Terms</a> and{' '}
+          uploaded. I agree to the <a href="/terms">Terms</a> and{' '}
           <a href="/content-policy">content policy</a>.
         </span>
       </label>
 
       <button className="btn" type="submit" disabled={busy || !agreed}>
-        {busy ? 'Taking you to checkout…' : `Continue to payment — ${SQUARE_PRICE_DISPLAY}`}
+        {busy ? 'Taking you to checkout…' : `Continue to payment (${SQUARE_PRICE_DISPLAY})`}
       </button>
     </form>
   )

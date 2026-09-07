@@ -1,5 +1,5 @@
 import Stripe from 'stripe'
-import { BRAND_NAME, SQUARE_PRICE_CENTS, env } from './env.ts'
+import { BRAND_NAME, CHECKOUT_BRAND_NAME, SQUARE_PRICE_CENTS, env } from './env.ts'
 
 let client: Stripe | null = null
 
@@ -36,9 +36,7 @@ export async function createCheckoutSession(args: {
           currency: 'usd',
           unit_amount: SQUARE_PRICE_CENTS,
           product_data: {
-            name: `One square on ${BRAND_NAME}`,
-            description:
-              'One permanent square, auto-assigned. Yours forever. Locked once uploaded. No refunds.',
+            name: `One square on ${CHECKOUT_BRAND_NAME}`,
           },
         },
       },

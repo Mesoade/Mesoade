@@ -1,9 +1,8 @@
 import type { Metadata } from 'next'
 import ClaimForm from '@/components/ClaimForm'
 import Footer from '@/components/Footer'
-import { BRAND_TAGLINE, SQUARE_PRICE_DISPLAY, UPLOAD_WINDOW_DAYS } from '@/lib/env'
+import { BRAND_TAGLINE, SQUARE_PRICE_DISPLAY } from '@/lib/env'
 import { getStats } from '@/lib/wall/queries'
-import { formatSquareLabel } from '@/lib/wall/geometry'
 
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'Claim your square' }
@@ -11,7 +10,6 @@ export const metadata: Metadata = { title: 'Claim your square' }
 export default async function ClaimPage() {
   const stats = await getStats()
   const soldOut = stats.activeRegion.remaining === 0 && stats.claimed >= stats.total
-  const nextIndex = stats.activeRegion.lastIndex - stats.activeRegion.remaining + 1
 
   return (
     <>
@@ -41,13 +39,8 @@ export default async function ClaimPage() {
         ) : (
           <>
             <p style={{ color: 'var(--text-dim)', lineHeight: 1.7, fontSize: 17 }}>
-              You&apos;ll be assigned square{' '}
-              <strong style={{ color: 'var(--text)' }}>
-                {formatSquareLabel(nextIndex)}
-              </strong>{' '}
-              — the next one out from the centre. You pay{' '}
-              {SQUARE_PRICE_DISPLAY} once, and then you get {UPLOAD_WINDOW_DAYS}{' '}
-              days to upload the one photo that will live there permanently.
+              You pay {SQUARE_PRICE_DISPLAY} once. Then you choose the one photo
+              that stays here for good.
             </p>
 
             <div className="card" style={{ marginTop: 28 }}>

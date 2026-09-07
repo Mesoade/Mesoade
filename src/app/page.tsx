@@ -116,8 +116,8 @@ export default async function HomePage() {
               </p>
               <h2>Three steps. The third one is permanent.</h2>
               <p className="section-lede">
-                You do not pick a spot and you do not get a second attempt.
-                Both of those are the point, not a limitation.
+                No picking a spot. No second attempt. That&apos;s how it&apos;s
+                supposed to work.
               </p>
             </Reveal>
 
@@ -126,19 +126,19 @@ export default async function HomePage() {
                 n={1}
                 delay={0}
                 title="Get your square"
-                body="You do not pick a spot. The next square on the wall is assigned to you automatically, working outward from the centre."
+                body="Your square is assigned automatically, the next one open, working outward from the centre."
               />
               <Step
                 n={2}
                 delay={60}
                 title={`Pay ${SQUARE_PRICE_DISPLAY}`}
-                body="One payment, once. No account, no subscription, no renewals. The square is permanently yours the moment you pay."
+                body="One payment, no account, no subscription. It's permanently yours the moment you pay."
               />
               <Step
                 n={3}
                 delay={120}
                 title="Upload your one photo"
-                body={`You have ${UPLOAD_WINDOW_DAYS} days. Once you upload it, it is locked forever — there is no edit button, and there never will be. That is the whole point.`}
+                body="Once you upload your photo, it's locked forever. No edit button, and there never will be one. That's the whole point."
               />
             </ol>
           </div>
@@ -160,44 +160,49 @@ export default async function HomePage() {
             <Reveal delay={80}>
               <Faq>
                 <FaqItem q="Can I change my photo later?">
-                  No. Not for any reason. Once you upload, it is locked
-                  permanently — there is no edit or replace anywhere in the
-                  product. This is the entire idea, not a limitation we plan to
-                  fix.
+                  No, and that&apos;s by design. Once your photo goes up,
+                  it&apos;s locked forever, no edits, no swapping it out later.
+                  That permanence is the whole point of the wall, not a
+                  limitation we&apos;re planning to fix.
                 </FaqItem>
                 <FaqItem q="Can I buy more than one square?">
-                  No. One square per person, and nothing here will sell you a
-                  second one. There is no bulk option and no way to buy one for
-                  someone else.
+                  No, one per person. It&apos;s what keeps this an actual
+                  one-in-a-million moment for everyone, not something a few
+                  people can stack up. There&apos;s no bulk option, and no way
+                  to buy one on someone else&apos;s behalf.
                 </FaqItem>
                 <FaqItem
-                  q={`What happens if I don’t upload within ${UPLOAD_WINDOW_DAYS} days?`}
+                  q={`What happens if I don't upload within ${UPLOAD_WINDOW_DAYS} days?`}
                 >
-                  You keep the square. Forever. It stays blank, showing a plain
-                  neutral tile, and it is never resold or given to anyone else.
-                  There is no refund.
+                  It&apos;s still yours, forever, even after the seven days
+                  pass. It&apos;ll just show a plain neutral tile instead of a
+                  photo, and we won&apos;t resell it or hand it to anyone else.
+                  There&apos;s no refund in that case, so it&apos;s worth
+                  setting yourself a reminder.
                 </FaqItem>
                 <FaqItem q="Can I get a refund?">
-                  No, under any circumstances. Including if you never upload
-                  anything.
+                  No, all sales are final, including if you never get around to
+                  uploading a photo. We&apos;d rather tell you that upfront than
+                  have you find out later.
                 </FaqItem>
                 <FaqItem q="What can't I upload?">
                   Sexually explicit content, illegal content, hate speech or
                   harassment, scams and fraudulent claims, other people&apos;s
                   private information, and anything that infringes someone
-                  else&apos;s copyright or trademark. The full{' '}
-                  <a href="/content-policy">content policy</a> has the detail. A
-                  moderator reviews content after it goes live and can remove
+                  else&apos;s copyright or trademark. See the full{' '}
+                  <a href="/content-policy">content policy</a> for detail. A real
+                  person reviews new photos after they go live and can remove
                   anything that breaks these rules.
                 </FaqItem>
                 <FaqItem q="If my content is removed, do I get my square back?">
-                  The square stays permanently yours — it is simply blank again,
-                  and cannot be re-uploaded. No refund, and it is never resold.
+                  The square stays yours, it just goes back to blank and
+                  can&apos;t be re-uploaded. No refund, and we won&apos;t resell
+                  it to anyone else.
                 </FaqItem>
                 <FaqItem q="Do I need an account?">
-                  No. There are no accounts here at all. After paying you get a
-                  permanent link to your square, and it is emailed to you. That
-                  link is how you find it again.
+                  No accounts, ever. After you pay, we email you a permanent
+                  link to your square, that link is the only way you&apos;ll
+                  find it again, so hold onto that email.
                 </FaqItem>
               </Faq>
             </Reveal>
