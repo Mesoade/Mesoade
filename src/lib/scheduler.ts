@@ -199,12 +199,24 @@ async function dispatchRow(row: DueRow, send: Mailer): Promise<boolean> {
 }
 
 /**
- * Drains due emails, oldest first.
+ * Drains due emails, oldest first, stopping when the time budget runs out.
+ *
+ * Each send is a sequential network call, and the caller is a serverless
+ * function with a hard execution ceiling that varies by hosting plan. Stopping
+ * on our own budget means the function returns a truthful result and leaves
+ * the rest pending, rather than being killed mid-batch with no idea how far it
+ * got. `remaining` is what the run did not reach: a number that stays above
+ * zero day after day means the queue is not keeping up.
  */
-export async function dispatchDueEmails(limit = 50): Promise<{
+export async function dispatchDueEmails(
+  limit = 50,
+  budgetMs = 8_000,
+): Promise<{
   sent: number
   failed: number
+  remaining: number
 }> {
+  const startedAt = Date.now()
   const due = await query<DueRow>(
     `SELECT id, kind, recipient, payload, attempts
        FROM scheduled_emails
@@ -217,13 +229,18 @@ export async function dispatchDueEmails(limit = 50): Promise<{
   const send = await mailer()
   let sent = 0
   let failed = 0
+  let processed = 0
 
   for (const row of due) {
+    // Checked before the send, not after: stopping once already over budget
+    // would still allow one more full send past the ceiling.
+    if (processed > 0 && Date.now() - startedAt >= budgetMs) break
+    processed++
     if (await dispatchRow(row, send)) sent++
     else failed++
   }
 
-  return { sent, failed }
+  return { sent, failed, remaining: due.length - processed }
 }
 
 /**
