@@ -103,7 +103,8 @@ export default function Wall({ storageBaseUrl, activeRing, initialCells }: WallP
     const colLocked = read('--wall-locked', '#28201a')
     const colOpen = read('--wall-open', '#322820')
     const colDot = read('--wall-dot', '#46372a')
-    const colBlank = read('--wall-blank', '#544639')
+    const colBlank = read('--wall-blank', '#6b5a4a')
+    const colBlankFar = read('--wall-blank-far', '#8a7259')
     const colTile = read('--wall-tile', '#c9a98c')
     const colRing = read('--wall-ring', '#c2542b')
 
@@ -187,8 +188,9 @@ export default function Wall({ storageBaseUrl, activeRing, initialCells }: WallP
         ctx.fillStyle = colTile
         ctx.fillRect(px, py, w, h)
       } else {
-        // Neutral default treatment: paid for, never filled, or removed.
-        ctx.fillStyle = colBlank
+        // Neutral default treatment: paid for, never filled, or removed. Which
+        // neutral depends on what it sits next to -- see --wall-blank-far.
+        ctx.fillStyle = showImages ? colBlank : colBlankFar
         ctx.fillRect(px, py, w, h)
       }
     }

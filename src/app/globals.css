@@ -55,9 +55,16 @@
   --wall-dot: #46372a;
   /* Paid for, never filled -- or content removed. Deliberately lighter than
      both the open field and the locked ground: a blank square must read as a
-     tile someone owns, not as a hole in the mosaic. */
-  --wall-blank: #544639;
+     tile someone owns, not as a hole in the mosaic. Mid-tone rather than dark:
+     among photographs the darkest thing on screen reads as damage, and a blank
+     square should recede, not announce itself. */
+  --wall-blank: #6b5a4a;
   --wall-tile: #c9a98c; /* a filled square, zoomed too far out for images */
+  /* The blank treatment has to work against two different neighbours. Among
+     photographs it sits dark (--wall-blank). Zoomed out, where every filled
+     square is flat --wall-tile, that same dark reads as a hole punched through
+     the block, so far-zoom blanks stay in the tile's colour family instead. */
+  --wall-blank-far: #8a7259;
   --wall-ring: #c2542b; /* the live frontier */
 
   --danger: #a32b22;
