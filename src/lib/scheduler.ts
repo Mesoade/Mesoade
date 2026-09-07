@@ -151,9 +151,55 @@ interface DueRow {
 
 const MAX_ATTEMPTS = 5
 
+type Mailer = Awaited<ReturnType<typeof mailer>>
+
 /**
- * Drains due emails. Each row is claimed with a conditional UPDATE so two
- * overlapping cron runs cannot send the same message twice.
+ * Sends one queued row. The row is claimed with a conditional UPDATE first, so
+ * two overlapping runs -- the cron and an immediate flush, say -- can never
+ * send the same message twice. Returns false if it was already claimed, sent,
+ * or failed to send; the row keeps its state either way, so a failure stays
+ * pending and the next cron run retries it.
+ */
+async function dispatchRow(row: DueRow, send: Mailer): Promise<boolean> {
+  const claimed = await queryOne<{ id: string }>(
+    `UPDATE scheduled_emails
+        SET attempts = attempts + 1
+      WHERE id = $1 AND status = 'pending'
+      RETURNING id`,
+    [row.id],
+  )
+  if (!claimed) return false
+
+  try {
+    const message = buildMessage(row)
+    if (!message) {
+      await query(
+        `UPDATE scheduled_emails SET status = 'cancelled', last_error = $2 WHERE id = $1`,
+        [row.id, `unknown kind: ${row.kind}`],
+      )
+      return false
+    }
+    await send.send(message)
+    await query(
+      `UPDATE scheduled_emails SET status = 'sent', sent_at = now(), last_error = NULL WHERE id = $1`,
+      [row.id],
+    )
+    return true
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    const exhausted = row.attempts + 1 >= MAX_ATTEMPTS
+    await query(
+      `UPDATE scheduled_emails
+          SET last_error = $2, status = CASE WHEN $3 THEN 'failed' ELSE status END
+        WHERE id = $1`,
+      [row.id, message, exhausted],
+    )
+    return false
+  }
+}
+
+/**
+ * Drains due emails, oldest first.
  */
 export async function dispatchDueEmails(limit = 50): Promise<{
   sent: number
@@ -173,44 +219,43 @@ export async function dispatchDueEmails(limit = 50): Promise<{
   let failed = 0
 
   for (const row of due) {
-    const claimed = await queryOne<{ id: string }>(
-      `UPDATE scheduled_emails
-          SET attempts = attempts + 1
-        WHERE id = $1 AND status = 'pending'
-        RETURNING id`,
-      [row.id],
-    )
-    if (!claimed) continue
-
-    try {
-      const message = buildMessage(row)
-      if (!message) {
-        await query(
-          `UPDATE scheduled_emails SET status = 'cancelled', last_error = $2 WHERE id = $1`,
-          [row.id, `unknown kind: ${row.kind}`],
-        )
-        continue
-      }
-      await send.send(message)
-      await query(
-        `UPDATE scheduled_emails SET status = 'sent', sent_at = now(), last_error = NULL WHERE id = $1`,
-        [row.id],
-      )
-      sent++
-    } catch (err) {
-      failed++
-      const message = err instanceof Error ? err.message : String(err)
-      const exhausted = row.attempts + 1 >= MAX_ATTEMPTS
-      await query(
-        `UPDATE scheduled_emails
-            SET last_error = $2, status = CASE WHEN $3 THEN 'failed' ELSE status END
-          WHERE id = $1`,
-        [row.id, message, exhausted],
-      )
-    }
+    if (await dispatchRow(row, send)) sent++
+    else failed++
   }
 
   return { sent, failed }
+}
+
+/**
+ * Sends one specific queued email immediately, by dedupe key.
+ *
+ * The queue is drained by a once-daily cron, which is the right cadence for
+ * reminders and time capsules but far too slow for a receipt: the claim
+ * confirmation carries the buyer's permanent link to their square, and with no
+ * accounts on this site that link is the only way they can find it again.
+ * Making somebody wait up to a day for it after paying is not acceptable, and
+ * it would silently eat a seventh of their upload window too.
+ *
+ * Addressed by dedupe key rather than draining the queue, so a backlog of
+ * older due rows can never push this one out of the batch.
+ *
+ * Never throws: the caller is a Stripe webhook, and a mail provider being down
+ * must not fail the webhook and trigger a redelivery. A row that does not send
+ * here simply stays pending for the next cron run.
+ */
+export async function dispatchNow(dedupeKey: string): Promise<boolean> {
+  try {
+    const row = await queryOne<DueRow>(
+      `SELECT id, kind, recipient, payload, attempts
+         FROM scheduled_emails
+        WHERE dedupe_key = $1 AND status = 'pending' AND attempts < $2`,
+      [dedupeKey, MAX_ATTEMPTS],
+    )
+    if (!row) return false
+    return await dispatchRow(row, await mailer())
+  } catch {
+    return false
+  }
 }
 
 function buildMessage(row: DueRow) {

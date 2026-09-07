@@ -4,7 +4,7 @@ import { query, queryOne } from '@/lib/db'
 import { UPLOAD_WINDOW_DAYS, env } from '@/lib/env'
 import { cardFingerprintFor, stripe } from '@/lib/stripe'
 import { generateToken, hashToken } from '@/lib/tokens'
-import { scheduleClaimEmails } from '@/lib/scheduler'
+import { dispatchNow, scheduleClaimEmails } from '@/lib/scheduler'
 import { WallSoldOutError, assignSquare, emailHasSquare } from '@/lib/wall/queries'
 
 export const dynamic = 'force-dynamic'
@@ -172,4 +172,11 @@ async function handleCompleted(session: Stripe.Checkout.Session): Promise<void> 
     claimedAt: paidAt,
     timeCapsuleNote: order.time_capsule_note,
   })
+
+  // The reminders and capsules can wait for the daily cron -- a few hours
+  // either way means nothing to them. The confirmation cannot: it carries the
+  // only link the buyer will ever have to their square. Sent here, and never
+  // allowed to throw, so a mail outage leaves the row pending for the cron
+  // rather than failing the webhook and making Stripe redeliver it.
+  await dispatchNow(`claim:${order.id}`)
 }
