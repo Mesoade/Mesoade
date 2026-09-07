@@ -11,7 +11,17 @@ function required(name: string): string {
 }
 
 function optional(name: string, fallback = ''): string {
-  return process.env[name] ?? fallback
+  const v = process.env[name]
+  /*
+   * An empty string counts as absent.
+   *
+   * `??` only falls back on undefined, so a variable that exists but was left
+   * blank used to be handed straight through -- and every hosting dashboard
+   * makes it easy to add a name, save, and never fill in the value. That is
+   * how NEXT_PUBLIC_SITE_URL reached `new URL('')` and failed a deploy with
+   * nothing but "Invalid URL" to go on.
+   */
+  return v === undefined || v.trim() === '' ? fallback : v
 }
 
 export const env = {
@@ -33,8 +43,46 @@ export const env = {
   get cronSecret() {
     return required('CRON_SECRET')
   },
+  /**
+   * The site's own origin.
+   *
+   * This is load-bearing well beyond metadata: Stripe's success and cancel
+   * redirects, the permanent square link, and the upload link inside the
+   * receipt email are all built from it. With no accounts on this site that
+   * emailed link is the only route a buyer has back to their square, so a
+   * wrong value here is worse than a failed build -- it sends paying customers
+   * to a URL that does not exist.
+   *
+   * Hence: prefer what was configured, fall back to the host the platform says
+   * we are deployed on rather than to localhost, and refuse anything that is
+   * not a usable absolute URL instead of letting it reach `new URL()` as a
+   * bare TypeError.
+   */
   get siteUrl() {
-    return optional('NEXT_PUBLIC_SITE_URL', 'http://localhost:3000').replace(/\/$/, '')
+    const configured = optional('NEXT_PUBLIC_SITE_URL')
+    // Vercel sets these itself. Both are bare hosts, with no scheme.
+    const platformHost =
+      optional('VERCEL_PROJECT_PRODUCTION_URL') || optional('VERCEL_URL')
+    const raw =
+      configured ||
+      (platformHost ? `https://${platformHost}` : 'http://localhost:3000')
+    const trimmed = raw.replace(/\/+$/, '')
+
+    let parsed: URL
+    try {
+      parsed = new URL(trimmed)
+    } catch {
+      throw new Error(
+        `NEXT_PUBLIC_SITE_URL is not a valid URL: ${JSON.stringify(raw)}. ` +
+          'It must include the scheme, e.g. https://amillionsquaresworld.com',
+      )
+    }
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      throw new Error(
+        `NEXT_PUBLIC_SITE_URL must be http or https, got ${JSON.stringify(parsed.protocol)}.`,
+      )
+    }
+    return trimmed
   },
   get storageDriver() {
     return optional('STORAGE_DRIVER', 'local') as 'local' | 's3'
