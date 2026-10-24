@@ -4,9 +4,10 @@ import { isAdmin } from '@/lib/admin-auth'
 import { query } from '@/lib/db'
 import { categoryLabel } from '@/lib/categories'
 import { publicUrl } from '@/lib/storage'
+import { UPLOAD_WINDOW_DAYS } from '@/lib/env'
 import { getStats } from '@/lib/wall/queries'
 import { formatSquareLabel } from '@/lib/wall/geometry'
-import { logout, removeContent } from './actions'
+import { deleteSquare, grantSquare, logout, removeContent } from './actions'
 
 export const metadata: Metadata = {
   title: 'Moderation',
@@ -27,8 +28,19 @@ interface RecentRow {
   open_reports: string
 }
 
-export default async function AdminPage() {
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ granted?: string; t?: string }>
+}) {
   if (!(await isAdmin())) redirect('/admin/login')
+
+  const sp = await searchParams
+  const grantedIndex = Number(sp.granted)
+  const granted =
+    Number.isInteger(grantedIndex) && sp.t
+      ? { index: grantedIndex, token: sp.t }
+      : null
 
   const [stats, recent, counters] = await Promise.all([
     getStats(),
@@ -106,6 +118,72 @@ export default async function AdminPage() {
         <Metric label="CSAM scan hits" value={String(c?.flagged_scans ?? 0)} />
       </section>
 
+      {granted && (
+        <div
+          className="card"
+          style={{
+            marginBottom: 28,
+            borderColor: 'var(--ember-deep)',
+            background: 'var(--ember-wash)',
+          }}
+        >
+          <h2 style={{ fontSize: 17, margin: '0 0 6px' }}>
+            {formatSquareLabel(granted.index)} is yours.
+          </h2>
+          <p style={{ margin: '0 0 12px', fontSize: 14, color: 'var(--text-dim)' }}>
+            Upload link below. It is also in the confirmation email, but copy it
+            now — this is the only time it is shown in plain text, and it is the
+            only way onto the upload screen.
+          </p>
+          <code
+            style={{
+              display: 'block',
+              wordBreak: 'break-all',
+              background: 'var(--bg)',
+              border: '1px solid var(--border)',
+              borderRadius: 8,
+              padding: '10px 12px',
+              fontSize: 13,
+            }}
+          >
+            {`/upload/${granted.index}?t=${granted.token}`}
+          </code>
+          <p style={{ margin: '12px 0 0' }}>
+            <a className="btn" href={`/upload/${granted.index}?t=${granted.token}`}>
+              Open the upload screen
+            </a>
+          </p>
+        </div>
+      )}
+
+      <h2 style={{ fontSize: 17, margin: '0 0 6px' }}>Give yourself a square</h2>
+      <p className="hint" style={{ margin: '0 0 14px' }}>
+        Assigns the next square from the same pool as everyone else, with no
+        payment. It behaves exactly like a bought square afterwards: same
+        permanent URL, same upload screen, same {UPLOAD_WINDOW_DAYS}-day window,
+        and locked forever once a photo is on it. The one-per-person rule does
+        not apply here, so this can be used as often as you like.
+      </p>
+      <form
+        action={grantSquare}
+        className="card"
+        style={{ marginBottom: 36, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}
+      >
+        <label className="field" style={{ margin: 0, flex: '1 1 260px' }}>
+          <span>Email for the grant</span>
+          <input type="email" name="email" required placeholder="you@example.com" />
+        </label>
+        <label className="field" style={{ margin: 0, flex: '1 1 260px' }}>
+          <span>
+            Time-capsule note <em style={{ color: 'var(--text-faint)' }}>(optional)</em>
+          </span>
+          <input type="text" name="note" placeholder="Left for your future self" />
+        </label>
+        <button className="btn" type="submit">
+          Assign a square
+        </button>
+      </form>
+
       <h2 style={{ fontSize: 17, margin: '0 0 6px' }}>Recently claimed</h2>
       <p className="hint" style={{ margin: '0 0 20px' }}>
         Newest first. Removing content leaves the square permanently owned by its
@@ -175,8 +253,9 @@ export default async function AdminPage() {
               )}
             </div>
 
+            <div style={{ flexShrink: 0, display: 'grid', gap: 10 }}>
             {row.state === 'filled' && (
-              <form action={removeContent} style={{ flexShrink: 0 }}>
+              <form action={removeContent}>
                 <input type="hidden" name="squareIndex" value={row.index} />
                 <input
                   type="text"
@@ -203,6 +282,35 @@ export default async function AdminPage() {
                 </button>
               </form>
             )}
+
+            <form action={deleteSquare}>
+              <input type="hidden" name="squareIndex" value={row.index} />
+              <input
+                type="text"
+                name="confirmIndex"
+                placeholder={`Type ${row.index}`}
+                autoComplete="off"
+                style={{
+                  display: 'block',
+                  width: 150,
+                  marginBottom: 8,
+                  background: 'var(--bg-input)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 6,
+                  color: 'var(--text)',
+                  padding: '7px 9px',
+                  fontSize: 13,
+                }}
+              />
+              <button
+                className="btn btn-ghost"
+                type="submit"
+                style={{ padding: '7px 12px', fontSize: 13, color: 'var(--danger)' }}
+              >
+                Delete square
+              </button>
+            </form>
+            </div>
           </div>
         ))}
       </div>

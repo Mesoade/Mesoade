@@ -208,14 +208,36 @@ export async function assignSquare(args: {
   uploadTokenHash: string
 }): Promise<{ index: number; ring: number; milestone: number | null }> {
   return transaction(async (client: PoolClient) => {
+    // Taken first and held for the whole transaction, even when the index ends
+    // up coming from the free list: this row lock is what serialises every
+    // assignment in the system, so draining released_squares underneath it
+    // cannot hand the same freed index to two callers at once.
     const cursor = await client.query<{ next_index: number }>(
       `SELECT next_index FROM wall_state WHERE id = 1 FOR UPDATE`,
     )
     const nextIndex = cursor.rows[0]?.next_index ?? 0
-    if (nextIndex >= TOTAL_SQUARES) throw new WallSoldOutError()
 
-    const cell = indexToCell(nextIndex)
-    const milestone = milestoneForIndex(nextIndex)
+    /*
+     * Reuse before extending.
+     *
+     * released_squares only ever contains indexes an admin deliberately
+     * deleted. Taking the lowest one first means a gap left in the middle of
+     * the wall is filled before the frontier moves outward again, which keeps
+     * "the earliest buyers are closest to the centre" true rather than leaving
+     * a permanent hole that nothing can ever occupy.
+     */
+    const reclaimed = await client.query<{ index: number }>(
+      `DELETE FROM released_squares
+        WHERE index = (SELECT index FROM released_squares ORDER BY index ASC LIMIT 1)
+        RETURNING index`,
+    )
+    const reused = reclaimed.rows[0]?.index
+
+    if (reused === undefined && nextIndex >= TOTAL_SQUARES) throw new WallSoldOutError()
+
+    const targetIndex = reused ?? nextIndex
+    const cell = indexToCell(targetIndex)
+    const milestone = milestoneForIndex(targetIndex)
 
     await client.query(
       `INSERT INTO squares (index, order_id, ring, x, y, state, upload_token_hash)
@@ -228,10 +250,14 @@ export async function assignSquare(args: {
       [args.orderId, cell.index, milestone],
     )
 
-    await client.query(
-      `UPDATE wall_state SET next_index = $1, updated_at = now() WHERE id = 1`,
-      [nextIndex + 1],
-    )
+    // The cursor only moves when the cursor was what we spent. Filling a gap
+    // must not consume a fresh index as well.
+    if (reused === undefined) {
+      await client.query(
+        `UPDATE wall_state SET next_index = $1, updated_at = now() WHERE id = 1`,
+        [nextIndex + 1],
+      )
+    }
 
     return { index: cell.index, ring: cell.ring, milestone }
   })
