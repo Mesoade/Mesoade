@@ -144,9 +144,48 @@ export async function cancelUploadReminders(orderId: string): Promise<void> {
 interface DueRow {
   id: string
   kind: string
+  dedupe_key: string
   recipient: string
   payload: Record<string, unknown>
   attempts: number
+}
+
+const REMINDER_KINDS = new Set(['upload_reminder_day1', 'upload_reminder_day5'])
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+/**
+ * How many days of the upload window are actually left, or null when the
+ * reminder should not go out at all.
+ *
+ * The figure used to be frozen into the payload at queue time -- 6 for the
+ * day-1 nudge, 2 for the day-5 -- which is only true if the queue drains on
+ * schedule. It does not always: the job runs once a day, and anything queued
+ * while a mail driver is misconfigured waits until it is fixed. Those rows
+ * then went out still claiming "6 days left" for windows that had closed weeks
+ * earlier, which is a false statement to somebody who paid.
+ *
+ * So it is computed at send time from the real deadline, and a reminder whose
+ * window has already closed is retired rather than sent with a nonsensical
+ * number. There is nothing left to remind anyone of by then: the square is
+ * theirs forever either way, it simply stays blank.
+ */
+async function remainingUploadDays(dedupeKey: string): Promise<number | null> {
+  const orderId = dedupeKey.slice(dedupeKey.indexOf(':') + 1)
+  if (!UUID.test(orderId)) return null
+
+  const row = await queryOne<{ deadline: Date | null; state: string | null }>(
+    `SELECT o.upload_deadline AS deadline, s.state
+       FROM orders o
+       LEFT JOIN squares s ON s.index = o.square_index
+      WHERE o.id = $1`,
+    [orderId],
+  )
+  // No order, no square any more, or already filled or removed: nothing to do.
+  if (!row || row.state !== 'claimed' || !row.deadline) return null
+
+  const msLeft = row.deadline.getTime() - Date.now()
+  if (msLeft <= 0) return null
+  return Math.max(1, Math.ceil(msLeft / 86_400_000))
 }
 
 const MAX_ATTEMPTS = 5
@@ -160,7 +199,26 @@ type Mailer = Awaited<ReturnType<typeof mailer>>
  * or failed to send; the row keeps its state either way, so a failure stays
  * pending and the next cron run retries it.
  */
-async function dispatchRow(row: DueRow, send: Mailer): Promise<boolean> {
+async function dispatchRow(
+  row: DueRow,
+  send: Mailer,
+): Promise<'sent' | 'skipped' | 'failed'> {
+  /*
+   * Checked before the row is claimed, so a reminder that should no longer go
+   * out is retired without burning an attempt.
+   */
+  if (REMINDER_KINDS.has(row.kind)) {
+    const daysLeft = await remainingUploadDays(row.dedupe_key)
+    if (daysLeft === null) {
+      await query(
+        `UPDATE scheduled_emails SET status = 'cancelled', last_error = $2 WHERE id = $1`,
+        [row.id, 'upload window closed, or the square is no longer waiting on a photo'],
+      )
+      return 'skipped'
+    }
+    row.payload = { ...row.payload, daysLeft }
+  }
+
   const claimed = await queryOne<{ id: string }>(
     `UPDATE scheduled_emails
         SET attempts = attempts + 1
@@ -168,7 +226,7 @@ async function dispatchRow(row: DueRow, send: Mailer): Promise<boolean> {
       RETURNING id`,
     [row.id],
   )
-  if (!claimed) return false
+  if (!claimed) return 'skipped'
 
   try {
     const message = buildMessage(row)
@@ -177,14 +235,14 @@ async function dispatchRow(row: DueRow, send: Mailer): Promise<boolean> {
         `UPDATE scheduled_emails SET status = 'cancelled', last_error = $2 WHERE id = $1`,
         [row.id, `unknown kind: ${row.kind}`],
       )
-      return false
+      return 'skipped'
     }
     await send.send(message)
     await query(
       `UPDATE scheduled_emails SET status = 'sent', sent_at = now(), last_error = NULL WHERE id = $1`,
       [row.id],
     )
-    return true
+    return 'sent'
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     const exhausted = row.attempts + 1 >= MAX_ATTEMPTS
@@ -194,7 +252,7 @@ async function dispatchRow(row: DueRow, send: Mailer): Promise<boolean> {
         WHERE id = $1`,
       [row.id, message, exhausted],
     )
-    return false
+    return 'failed'
   }
 }
 
@@ -214,11 +272,12 @@ export async function dispatchDueEmails(
 ): Promise<{
   sent: number
   failed: number
+  skipped: number
   remaining: number
 }> {
   const startedAt = Date.now()
   const due = await query<DueRow>(
-    `SELECT id, kind, recipient, payload, attempts
+    `SELECT id, kind, dedupe_key, recipient, payload, attempts
        FROM scheduled_emails
       WHERE status = 'pending' AND send_at <= now() AND attempts < $2
       ORDER BY send_at ASC
@@ -229,6 +288,7 @@ export async function dispatchDueEmails(
   const send = await mailer()
   let sent = 0
   let failed = 0
+  let skipped = 0
   let processed = 0
 
   for (const row of due) {
@@ -236,11 +296,13 @@ export async function dispatchDueEmails(
     // would still allow one more full send past the ceiling.
     if (processed > 0 && Date.now() - startedAt >= budgetMs) break
     processed++
-    if (await dispatchRow(row, send)) sent++
-    else failed++
+    const outcome = await dispatchRow(row, send)
+    if (outcome === 'sent') sent++
+    else if (outcome === 'failed') failed++
+    else skipped++
   }
 
-  return { sent, failed, remaining: due.length - processed }
+  return { sent, failed, skipped, remaining: due.length - processed }
 }
 
 /**
@@ -263,13 +325,13 @@ export async function dispatchDueEmails(
 export async function dispatchNow(dedupeKey: string): Promise<boolean> {
   try {
     const row = await queryOne<DueRow>(
-      `SELECT id, kind, recipient, payload, attempts
+      `SELECT id, kind, dedupe_key, recipient, payload, attempts
          FROM scheduled_emails
         WHERE dedupe_key = $1 AND status = 'pending' AND attempts < $2`,
       [dedupeKey, MAX_ATTEMPTS],
     )
     if (!row) return false
-    return await dispatchRow(row, await mailer())
+    return (await dispatchRow(row, await mailer())) === 'sent'
   } catch {
     return false
   }
