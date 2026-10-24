@@ -118,6 +118,10 @@ export default async function AdminPage({
           value={stats.activeRegion.remaining.toLocaleString('en-US')}
         />
         <Metric label="Wall filled" value={`${stats.fillPercent.toFixed(4)}%`} />
+        <Metric
+          label="Released, awaiting reuse"
+          value={stats.released.toLocaleString('en-US')}
+        />
         <Metric label="Open reports" value={String(c?.open_reports ?? 0)} />
         <Metric label="Duplicate purchases" value={String(c?.duplicates ?? 0)} />
         <Metric label="CSAM scan hits" value={String(c?.flagged_scans ?? 0)} />

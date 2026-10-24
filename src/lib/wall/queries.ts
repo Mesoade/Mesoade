@@ -46,6 +46,8 @@ export interface WallStats {
   revenueCents: number
   activeRegion: ActiveRegion
   fillPercent: number
+  /** Indexes freed by an admin deletion, waiting to be handed out again. */
+  released: number
 }
 
 export async function getStats(): Promise<WallStats> {
@@ -54,24 +56,43 @@ export async function getStats(): Promise<WallStats> {
     filled: string
     revenue_cents: string | null
     next_index: number
+    released: string
   }>(
     `SELECT
        (SELECT count(*) FROM squares) AS claimed,
        (SELECT count(*) FROM squares WHERE state = 'filled') AS filled,
        (SELECT coalesce(sum(amount_cents), 0) FROM orders WHERE status = 'paid') AS revenue_cents,
-       (SELECT next_index FROM wall_state WHERE id = 1) AS next_index`,
+       (SELECT next_index FROM wall_state WHERE id = 1) AS next_index,
+       (SELECT count(*) FROM released_squares) AS released`,
   )
 
   const claimed = Number(row?.claimed ?? 0)
   const nextIndex = row?.next_index ?? 0
+  const released = Number(row?.released ?? 0)
+
+  /*
+   * A released index is claimable right now -- assignSquare() hands those out
+   * before it touches the cursor -- but activeRegion() is a pure function of
+   * the cursor and cannot know about them. Left uncorrected, "N are left in the
+   * region open right now" undercounts by one for every square an admin has
+   * deleted, and that line is on the public homepage. This product does not get
+   * to publish a number that is merely close.
+   *
+   * Released squares can sit in a lower ring than the active one. They are
+   * still counted here, because the question that sentence answers is how many
+   * squares somebody can claim before the frontier moves, not which ring they
+   * happen to fall in.
+   */
+  const region = activeRegion(nextIndex)
 
   return {
     claimed,
     filled: Number(row?.filled ?? 0),
     total: TOTAL_SQUARES,
     revenueCents: Number(row?.revenue_cents ?? 0),
-    activeRegion: activeRegion(nextIndex),
+    activeRegion: { ...region, remaining: region.remaining + released },
     fillPercent: (claimed / TOTAL_SQUARES) * 100,
+    released,
   }
 }
 
