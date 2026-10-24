@@ -110,7 +110,11 @@ export default async function SquarePage({
                 width: '100%',
                 maxWidth: 460,
                 aspectRatio: '1 / 1',
-                objectFit: 'cover',
+                // Contain, not cover: this is the page a buyer shares and
+                // returns to, and cropping their one permanent photo to fit a
+                // square frame is exactly the thing not to do here.
+                objectFit: 'contain',
+                background: 'var(--paper-sunk)',
                 borderRadius: 14,
                 border: '1px solid var(--border)',
                 display: 'block',

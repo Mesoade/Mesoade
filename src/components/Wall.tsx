@@ -107,6 +107,7 @@ export default function Wall({ storageBaseUrl, activeRing, initialCells }: WallP
     const colBlankFar = read('--wall-blank-far', '#8a7259')
     const colTile = read('--wall-tile', '#c9a98c')
     const colRing = read('--wall-ring', '#c2542b')
+    const colMat = read('--wall-mat', '#231c17')
 
     ctx.fillStyle = colBg
     ctx.fillRect(0, 0, cssW, cssH)
@@ -177,7 +178,7 @@ export default function Wall({ storageBaseUrl, activeRing, initialCells }: WallP
       if (cell.s === 1 && cell.k && showImages) {
         const img = getImage(imagesRef.current, storageBaseUrl, cell.k, scheduleDraw)
         if (img) {
-          ctx.drawImage(img, px, py, w, h)
+          drawWholePhoto(ctx, img, px, py, w, h, colMat)
         } else {
           ctx.fillStyle = colBlank
           ctx.fillRect(px, py, w, h)
@@ -429,6 +430,55 @@ export default function Wall({ storageBaseUrl, activeRing, initialCells }: WallP
 }
 
 // ---- helpers --------------------------------------------------------------
+
+/**
+ * Draws the whole photo inside its cell: never cropped, never distorted.
+ *
+ * Nothing in the pipeline reshapes an upload -- inspectImage() only validates,
+ * so the bytes stored are the bytes the buyer chose, at whatever aspect ratio
+ * their camera produced. Scaling that to fill a square cell stretched tall
+ * photos sideways, and cropping it to fill would cut away part of the single
+ * image somebody is only ever allowed to choose once. Neither is acceptable
+ * for this product, so the cell is matted and the photo is fitted whole.
+ *
+ * A square upload still covers its cell exactly, edge to edge, so a wall of
+ * square photos remains the seamless mosaic it was meant to be.
+ */
+function drawWholePhoto(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  px: number,
+  py: number,
+  w: number,
+  h: number,
+  mat: string,
+): void {
+  const iw = img.naturalWidth || img.width
+  const ih = img.naturalHeight || img.height
+  if (!iw || !ih) return
+
+  // Already square: fill the cell exactly and leave no seam.
+  if (iw === ih) {
+    ctx.drawImage(img, px, py, w, h)
+    return
+  }
+
+  ctx.fillStyle = mat
+  ctx.fillRect(px, py, w, h)
+
+  const fit = Math.min(w / iw, h / ih)
+  // Rounded so the photo lands on whole pixels; at the zoom where a single
+  // square fills the screen, a half-pixel edge is plainly visible.
+  const dw = Math.max(1, Math.round(iw * fit))
+  const dh = Math.max(1, Math.round(ih * fit))
+  ctx.drawImage(
+    img,
+    px + Math.round((w - dw) / 2),
+    py + Math.round((h - dh) / 2),
+    dw,
+    dh,
+  )
+}
 
 /**
  * The locked region's texture: one small dot per DOT_SPACING square.

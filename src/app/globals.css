@@ -65,6 +65,10 @@
      square is flat --wall-tile, that same dark reads as a hole punched through
      the block, so far-zoom blanks stay in the tile's colour family instead. */
   --wall-blank-far: #8a7259;
+  /* The surround behind a photo that is not square. Darker than the open
+     field so it reads as a mat the photo is mounted on, and far darker than
+     --wall-blank so a matted photo is never mistaken for an empty square. */
+  --wall-mat: #231c17;
   --wall-ring: #c2542b; /* the live frontier */
 
   --danger: #a32b22;

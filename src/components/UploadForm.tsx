@@ -133,7 +133,8 @@ export default function UploadForm({ squareIndex, token, sessionId }: Props) {
       <p className="hint" style={{ marginTop: -8, marginBottom: 18 }}>
         JPEG, PNG, WebP, or GIF. Up to{' '}
         {Math.floor(MAX_UPLOAD_BYTES / 1024 / 1024)} MB. Squares are square, so
-        it will be shown cropped to a square.
+        anything taller or wider than it is high is shown whole, centred, with
+        space either side — nothing is cropped away.
       </p>
 
       {preview && (
@@ -148,7 +149,11 @@ export default function UploadForm({ squareIndex, token, sessionId }: Props) {
             style={{
               width: 190,
               height: 190,
-              objectFit: 'cover',
+              // Matches how the wall draws it: the whole photo, fitted, never
+              // cropped. A preview that crops would misrepresent the one
+              // irreversible decision this form exists to take.
+              objectFit: 'contain',
+              background: 'var(--paper-sunk)',
               borderRadius: 10,
               border: '1px solid var(--border)',
               display: 'block',
