@@ -31,7 +31,12 @@ interface RecentRow {
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ granted?: string; t?: string }>
+  searchParams: Promise<{
+    granted?: string
+    t?: string
+    error?: string
+    notice?: string
+  }>
 }) {
   if (!(await isAdmin())) redirect('/admin/login')
 
@@ -117,6 +122,27 @@ export default async function AdminPage({
         <Metric label="Duplicate purchases" value={String(c?.duplicates ?? 0)} />
         <Metric label="CSAM scan hits" value={String(c?.flagged_scans ?? 0)} />
       </section>
+
+      {sp.error && (
+        <div className="error" style={{ marginBottom: 24, fontSize: 15 }}>
+          {sp.error}
+        </div>
+      )}
+
+      {sp.notice && (
+        <div
+          className="card"
+          style={{
+            marginBottom: 24,
+            borderColor: 'var(--patina)',
+            background: 'var(--patina-wash)',
+            fontSize: 15,
+            color: 'var(--ink)',
+          }}
+        >
+          {sp.notice}
+        </div>
+      )}
 
       {granted && (
         <div
