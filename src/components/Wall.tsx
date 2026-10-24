@@ -50,7 +50,22 @@ interface WallProps {
 }
 
 const MIN_SCALE = 0.35 // whole wall fits comfortably
-const MAX_SCALE = 40 // a single square fills a good chunk of the viewport
+
+/**
+ * How far in a viewer can zoom, as pixels per cell.
+ *
+ * Derived from the viewport rather than fixed, so that fully zoomed in really
+ * does mean one square filling the frame on a phone and on a desktop alike. It
+ * used to be a flat 40, which is a thumbnail: somebody who had just paid for a
+ * square and uploaded the one photo they are ever allowed to upload could not
+ * zoom in far enough to look at it.
+ */
+function maxScaleFor(canvas: HTMLCanvasElement): number {
+  const shortest = Math.min(canvas.clientWidth, canvas.clientHeight)
+  // The 0.9 leaves a margin of neighbouring squares around the focused one, so
+  // it still reads as part of the wall rather than as a full-screen image.
+  return Math.max(60, Math.round(shortest * 0.9))
+}
 const IMAGE_SCALE_THRESHOLD = 7 // px per cell before images are worth loading
 const IMAGE_CACHE_CAP = 900
 const DOT_SPACING = 6 // px between locked-region dots, in screen space
@@ -95,6 +110,7 @@ export default function Wall({ storageBaseUrl, activeRing, initialCells }: WallP
 
     const { scale, offsetX, offsetY } = viewRef.current
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    ctx.imageSmoothingQuality = 'high'
 
     const styles = getComputedStyle(document.documentElement)
     const read = (name: string, fallback: string) =>
@@ -239,7 +255,7 @@ export default function Wall({ storageBaseUrl, activeRing, initialCells }: WallP
       const px = clientX - rect.left
       const py = clientY - rect.top
       const v = viewRef.current
-      const next = clamp(v.scale * factor, MIN_SCALE, MAX_SCALE)
+      const next = clamp(v.scale * factor, MIN_SCALE, maxScaleFor(canvas))
       if (next === v.scale) return
       // Keep the point under the cursor fixed while zooming.
       v.offsetX = px - ((px - v.offsetX) / v.scale) * next
@@ -259,7 +275,7 @@ export default function Wall({ storageBaseUrl, activeRing, initialCells }: WallP
     // Start centred, showing the whole field.
     const fit = Math.min(canvas.clientWidth, canvas.clientHeight) / GRID_SIZE
     const v = viewRef.current
-    v.scale = clamp(fit * 0.92, MIN_SCALE, MAX_SCALE)
+    v.scale = clamp(fit * 0.92, MIN_SCALE, maxScaleFor(canvas))
     v.offsetX = (canvas.clientWidth - GRID_SIZE * v.scale) / 2
     v.offsetY = (canvas.clientHeight - GRID_SIZE * v.scale) / 2
     setReady(true)
