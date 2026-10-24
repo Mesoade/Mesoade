@@ -175,8 +175,20 @@ export interface ActivityItem {
   category: string | null
 }
 
+/**
+ * How many claims the "Just claimed" feed shows.
+ *
+ * One constant rather than a number at each call site: the homepage renders
+ * the feed on the server and the component then re-polls it every 20 seconds,
+ * so if the two disagreed the list would silently change length a few seconds
+ * after the page loaded.
+ */
+export const ACTIVITY_FEED_SIZE = 5
+
 /** Real claims only. Nothing is synthesised to make the feed look busier. */
-export async function getRecentActivity(limit = 12): Promise<ActivityItem[]> {
+export async function getRecentActivity(
+  limit = ACTIVITY_FEED_SIZE,
+): Promise<ActivityItem[]> {
   const rows = await query<{
     index: number
     claimed_at: Date

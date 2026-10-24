@@ -4,7 +4,12 @@ import Footer from '@/components/Footer'
 import Reveal from '@/components/Reveal'
 import Wall from '@/components/Wall'
 import { BRAND_NAME, SQUARE_PRICE_DISPLAY, UPLOAD_WINDOW_DAYS, env } from '@/lib/env'
-import { getRecentActivity, getStats, getWallCells } from '@/lib/wall/queries'
+import {
+  ACTIVITY_FEED_SIZE,
+  getRecentActivity,
+  getStats,
+  getWallCells,
+} from '@/lib/wall/queries'
 import { TOTAL_SQUARES } from '@/lib/wall/geometry'
 
 // Stats and the feed must always be current -- they are real numbers about real
@@ -14,7 +19,7 @@ export const dynamic = 'force-dynamic'
 export default async function HomePage() {
   const [stats, activity, cells] = await Promise.all([
     getStats(),
-    getRecentActivity(8),
+    getRecentActivity(ACTIVITY_FEED_SIZE),
     getWallCells({ limit: 60_000 }),
   ])
 
