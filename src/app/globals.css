@@ -570,6 +570,11 @@ h3,
   height: 100%;
   align-content: start;
   gap: 0;
+  /* Keeps every tile's z-index inside the grid. Without it the grid stops
+     being a stacking context the moment its entrance finishes, and the tiles
+     -- which stack among themselves so a dragged one rides above the rest --
+     climb over the veil and lose their overlay entirely. */
+  isolation: isolate;
 }
 
 .stage-tile {
@@ -620,16 +625,21 @@ h3,
 .stage-veil {
   position: absolute;
   inset: 0;
+  z-index: 2;
   pointer-events: none;
+  /* Three layers, heaviest where the words are: a band under the nav, a
+     left-weighted wash under the headline, and a flat tint over everything so
+     the field reads as one surface rather than a hundred photographs. */
   background:
+    linear-gradient(to bottom, rgba(20, 15, 11, 0.45) 0%, transparent 22%),
     linear-gradient(
       to right,
-      rgba(26, 21, 16, 0.95) 0%,
-      rgba(26, 21, 16, 0.78) 30%,
-      rgba(26, 21, 16, 0.5) 62%,
-      rgba(26, 21, 16, 0.68) 100%
+      rgba(20, 15, 11, 0.77) 0%,
+      rgba(20, 15, 11, 0.67) 30%,
+      rgba(20, 15, 11, 0.37) 62%,
+      rgba(20, 15, 11, 0.47) 100%
     ),
-    rgba(26, 21, 16, 0.5);
+    rgba(20, 15, 11, 0.4);
 }
 
 /* -- Stage chrome ------------------------------------------------------ */
@@ -754,6 +764,7 @@ h3,
   color: var(--stage-ink);
   margin: 0;
   max-width: 14ch;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 44px rgba(0, 0, 0, 0.5);
 }
 .stage-line {
   display: block;
