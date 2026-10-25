@@ -1,9 +1,11 @@
 import ActivityFeed from '@/components/ActivityFeed'
 import { Faq, FaqItem } from '@/components/Faq'
 import Footer from '@/components/Footer'
+import HeroStage from '@/components/HeroStage'
 import Reveal from '@/components/Reveal'
 import Wall from '@/components/Wall'
 import { BRAND_NAME, SQUARE_PRICE_DISPLAY, UPLOAD_WINDOW_DAYS, env } from '@/lib/env'
+import { getHeroPhotos } from '@/lib/hero-photos'
 import {
   ACTIVITY_FEED_SIZE,
   getRecentActivity,
@@ -17,59 +19,46 @@ import { TOTAL_SQUARES } from '@/lib/wall/geometry'
 export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
-  const [stats, activity, cells] = await Promise.all([
+  const [stats, activity, cells, heroPhotos] = await Promise.all([
     getStats(),
     getRecentActivity(ACTIVITY_FEED_SIZE),
     getWallCells({ limit: 60_000 }),
+    getHeroPhotos(),
   ])
 
   return (
     <>
       <main>
         {/* 1. Hero -------------------------------------------------------
-            No photography, no illustration: type, colour and space carry
-            the whole thing. One accent lands on one word. */}
-        <section className="hero">
-          <div className="wrap">
-            <p className="eyebrow enter enter-1">{BRAND_NAME}</p>
+            A decorative photo grid, a veil, and the sentence on top. The
+            photographs are stock, fixed, and unconnected to the wall: an
+            empty wall must never produce an empty hero. Only the count and
+            the link out of it are real. */}
+        <HeroStage
+          photos={heroPhotos}
+          claimed={stats.claimed}
+          total={TOTAL_SQUARES}
+          priceDisplay={SQUARE_PRICE_DISPLAY}
+          brand={BRAND_NAME}
+        />
 
-            <h1 className="hero-title enter enter-2">
-              You get one.
-              <span className="hero-forever">Forever.</span>
-              Choose wisely.
-            </h1>
-
-            <p className="hero-sub enter enter-3">
-              A million people will each get to do this exactly once. Somewhere
-              in that million is your one square. What&apos;s the photo
-              you&apos;d actually want it to be?
-            </p>
-
-            <div className="hero-actions enter enter-4">
-              <a className="btn" href="/claim">
-                Claim your square, {SQUARE_PRICE_DISPLAY}
-              </a>
-              <a className="link-quiet" href="#how">
-                How it works
-                <span aria-hidden="true">↓</span>
-              </a>
-            </div>
-
-            {/* A real count of real rows. Nothing here is padded, seeded or
-                rounded -- see getStats() in src/lib/wall/queries.ts. */}
-            <p className="hero-stat enter enter-5">
-              <span className="live-dot" aria-hidden="true" />
-              <span>
-                <ClaimedCount n={stats.claimed} />
-              </span>
-            </p>
-          </div>
+        {/* 1b. The black band --------------------------------------------
+            Where the hero's grid has finished fading out. Carries the
+            subheadline and nothing else. */}
+        <section className="void">
+          <p className="void-copy">
+            A million people will each get to do this exactly once. Somewhere in
+            that million is your one square.{' '}
+            <span className="void-ask">
+              What&apos;s the photo you&apos;d actually want it to be?
+            </span>
+          </p>
         </section>
 
         {/* 2. The wall ---------------------------------------------------
             The one dark band on the page, and it earns itself: real
             photographs need dark surroundings to read as photographs. */}
-        <section className="section-vault">
+        <section className="section-vault" id="wall">
           <div className="wrap">
             <p className="eyebrow" style={{ marginBottom: 14 }}>
               The wall
@@ -150,7 +139,7 @@ export default async function HomePage() {
         </section>
 
         {/* 4. FAQ --------------------------------------------------------- */}
-        <section className="section">
+        <section className="section" id="rules">
           <div className="wrap">
             <Reveal>
               <p className="eyebrow" style={{ marginBottom: 14 }}>
@@ -216,23 +205,6 @@ export default async function HomePage() {
       </main>
 
       <Footer />
-    </>
-  )
-}
-
-/**
- * The live claimed count.
- *
- * Wired straight to the real row count, including when that count is zero --
- * "0 people have already claimed theirs" is a true sentence, and a fabricated
- * starting number is the one thing this product cannot afford. Only the
- * singular is special-cased, because "1 people" is a bug rather than a number.
- */
-function ClaimedCount({ n }: { n: number }) {
-  return (
-    <>
-      <strong className="num">{n.toLocaleString('en-US')}</strong>{' '}
-      {n === 1 ? 'person has' : 'people have'} already claimed theirs.
     </>
   )
 }

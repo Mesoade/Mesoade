@@ -71,6 +71,16 @@
   --wall-mat: #231c17;
   --wall-ring: #c2542b; /* the live frontier */
 
+  /* -- The hero band ---------------------------------------------------
+     A separate palette from the paper sections below it, per the design.
+     Deliberately not wired to --ember or --vault: those belong to the rest
+     of the page, and a shared token would make a change to one silently
+     change the other. */
+  --stage-bg: #1a1510; /* near-black, warm brown undertone */
+  --stage-ink: #f5efe4; /* warm off-white */
+  --stage-accent: #e56731;
+  --stage-void: #000000; /* what the grid fades down into */
+
   --danger: #a32b22;
   --danger-wash: #f8e4e1;
 
@@ -495,91 +505,426 @@ h3,
   line-height: 1.6;
 }
 
-/* -- Hero ------------------------------------------------------------- */
+/* -- The hero band ----------------------------------------------------
+   A full-viewport stage: a decorative photo grid, a veil over it, and the
+   sentence on top. The grid is behind everything and interactive; the text
+   layer above it is transparent to the pointer except where it is actually
+   clickable, so almost the whole stage stays draggable. */
 
-.hero {
-  padding: clamp(72px, 11vw, 128px) 0 clamp(56px, 7vw, 88px);
-}
-
-.hero-title {
-  font-size: clamp(44px, 7.6vw, 84px);
-  line-height: 0.98;
-  letter-spacing: -0.032em;
-  margin: 28px 0 0;
-  max-width: 13ch;
-}
-
-/* The single colour moment in the hero, and it lands on the word the
-   entire product rests on. WONK and a steeper optical size make it lean
-   away from the roman around it. */
-.hero-forever {
-  display: block;
-  color: var(--ember-deep);
-  font-style: italic;
-  font-variation-settings: 'SOFT' 60, 'WONK' 1, 'opsz' 144;
-}
-
-.hero-sub {
-  font-size: clamp(17.5px, 1.5vw, 19.5px);
-  line-height: 1.62;
-  color: var(--ink-2);
-  max-width: 54ch;
-  margin: 26px 0 0;
-}
-
-.hero-actions {
-  display: flex;
-  align-items: center;
-  gap: 22px;
-  flex-wrap: wrap;
-  margin-top: 38px;
-}
-
-.hero-stat {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 30px 0 0;
-  font-size: 15px;
-  color: var(--ink-3);
-  line-height: 1.5;
-}
-.hero-stat strong {
-  color: var(--ink);
-  font-weight: 500;
-}
-
-/* A slow breath, not a blink. Three seconds is long enough to read as
-   "something is alive here" without ever pulling the eye off the copy. */
-.live-dot {
+.stage {
   position: relative;
-  flex: none;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--patina);
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--stage-bg);
+  color: var(--stage-ink);
+  isolation: isolate;
 }
-/* The ring is a scaled pseudo-element rather than an animated box-shadow
-   spread. This animation never stops, and an animated shadow repaints the
-   element on every frame of every one of those seconds; transform and opacity
-   stay on the compositor. */
-.live-dot::after {
-  content: '';
+
+.stage-field {
   position: absolute;
   inset: 0;
-  border-radius: 50%;
-  border: 1px solid var(--patina);
-  animation: breath 3s var(--ease-out) infinite;
+  z-index: 0;
+  /* The fade the next section continues from: the grid dissolves into the
+     ground over the bottom of the stage, so scrolling on reveals only a thin
+     faded tail of it above the black. */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 46%,
+    rgba(0, 0, 0, 0.6) 72%,
+    rgba(0, 0, 0, 0.14) 90%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 46%,
+    rgba(0, 0, 0, 0.6) 72%,
+    rgba(0, 0, 0, 0.14) 90%,
+    transparent 100%
+  );
 }
-@keyframes breath {
+
+.stage-grid {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  align-content: start;
+  gap: 0;
+}
+
+.stage-tile {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: #241c15;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.stage-tone {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.stage-tile img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+/* Only once the grid is live does it suggest it can be moved. */
+.stage-tile[data-live='true'] {
+  cursor: grab;
+  touch-action: none;
+}
+.stage-tile[data-dragging='true'] {
+  cursor: grabbing;
+}
+@media (hover: hover) and (pointer: fine) {
+  .stage-tile[data-live='true']:hover::after,
+  .stage-tile[data-dragging='true']::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 1.5px solid var(--stage-accent);
+    pointer-events: none;
+  }
+}
+.stage-tile[data-dragging='true'] {
+  box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.75);
+}
+
+/* Mutes and unifies the whole grid in one layer instead of processing each
+   photograph. Transparent to the pointer so it cannot swallow a drag. */
+.stage-veil {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      to right,
+      rgba(26, 21, 16, 0.95) 0%,
+      rgba(26, 21, 16, 0.78) 30%,
+      rgba(26, 21, 16, 0.5) 62%,
+      rgba(26, 21, 16, 0.68) 100%
+    ),
+    rgba(26, 21, 16, 0.5);
+}
+
+/* -- Stage chrome ------------------------------------------------------ */
+
+.stage-nav {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px clamp(18px, 4vw, 44px);
+  pointer-events: none;
+}
+.stage-nav > * {
+  pointer-events: auto;
+}
+.stage-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
+  font-size: 11.5px;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  color: var(--stage-ink);
+  text-decoration: none;
+}
+.stage-mark-glyph {
+  width: 13px;
+  height: 13px;
+  flex: none;
+  background:
+    linear-gradient(var(--stage-accent) 0 0) 0 0 / 5px 5px no-repeat,
+    linear-gradient(var(--stage-ink) 0 0) 8px 0 / 5px 5px no-repeat,
+    linear-gradient(var(--stage-ink) 0 0) 0 8px / 5px 5px no-repeat,
+    linear-gradient(var(--stage-ink) 0 0) 8px 8px / 5px 5px no-repeat;
+}
+.stage-links {
+  display: flex;
+  gap: clamp(18px, 3vw, 40px);
+}
+.stage-links a {
+  font-family: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--stage-ink) 62%, transparent);
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+.stage-links a:hover {
+  color: var(--stage-ink);
+}
+.stage-nav-cta {
+  font-family: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--stage-ink);
+  background: var(--stage-accent);
+  border-radius: 999px;
+  padding: 8px 16px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: transform 160ms var(--ease-out), filter 160ms ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .stage-nav-cta:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.07);
+    color: var(--stage-ink);
+  }
+}
+.stage-nav-cta:active {
+  transform: scale(0.97);
+}
+
+@media (max-width: 760px) {
+  .stage-links {
+    display: none;
+  }
+}
+
+/* -- Stage content ----------------------------------------------------- */
+
+.stage-inner {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 clamp(18px, 4vw, 44px) clamp(40px, 9vh, 96px);
+  /* Transparent to the pointer so the grid underneath stays draggable;
+     the controls re-enable it for themselves. */
+  pointer-events: none;
+}
+.stage-inner a {
+  pointer-events: auto;
+}
+
+.stage-eyebrow {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--stage-ink) 55%, transparent);
+  margin: 0 0 clamp(14px, 2vh, 24px);
+  opacity: 0;
+  transition: opacity 420ms ease;
+}
+.stage-eyebrow[data-on='true'] {
+  opacity: 1;
+}
+
+.stage-title {
+  font-family: var(--font-stage), Georgia, serif;
+  font-weight: 500;
+  font-size: clamp(42px, 8.2vw, 104px);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  color: var(--stage-ink);
+  margin: 0;
+  max-width: 14ch;
+}
+.stage-line {
+  display: block;
+}
+.stage-line[data-accent='true'] {
+  color: var(--stage-accent);
+  font-style: italic;
+}
+
+/* Characters exist in the DOM from the first byte -- the animation reveals
+   them, it does not create them -- so the sentence is readable to a crawler
+   and to anyone whose JavaScript never arrives. */
+.stage-char {
+  opacity: 0;
+}
+.stage-char[data-on='true'] {
+  opacity: 1;
+}
+
+.stage-caret {
+  display: inline-block;
+  width: 0.06em;
+  height: 0.78em;
+  margin-left: 0.04em;
+  vertical-align: baseline;
+  background: var(--stage-accent);
+  animation: stage-blink 1s steps(1, end) infinite;
+}
+@keyframes stage-blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50.01%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.stage-actions {
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 2vw, 26px);
+  flex-wrap: wrap;
+  margin-top: clamp(24px, 4vh, 44px);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 520ms ease 120ms, transform 520ms var(--ease-out) 120ms;
+}
+.stage-actions[data-on='true'] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.stage-cta {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--stage-ink);
+  background: var(--stage-accent);
+  border-radius: 999px;
+  padding: 13px 26px;
+  text-decoration: none;
+  box-shadow: 0 10px 26px -12px rgba(229, 103, 49, 0.9);
+  transition: transform 160ms var(--ease-out), box-shadow 160ms var(--ease-out),
+    filter 160ms ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .stage-cta:hover {
+    transform: translateY(-1.5px);
+    filter: brightness(1.06);
+    color: var(--stage-ink);
+    box-shadow: 0 16px 32px -12px rgba(229, 103, 49, 0.95);
+  }
+}
+.stage-cta:active {
+  transform: translateY(0) scale(0.97);
+  transition-duration: 90ms;
+}
+
+.stage-quiet {
+  font-family: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--stage-ink) 62%, transparent);
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+.stage-quiet:hover {
+  color: var(--stage-ink);
+}
+
+.stage-stat {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: clamp(18px, 3vh, 30px) 0 0;
+  font-family: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: color-mix(in srgb, var(--stage-ink) 58%, transparent);
+  opacity: 0;
+  transition: opacity 520ms ease 240ms;
+}
+.stage-stat[data-on='true'] {
+  opacity: 1;
+}
+.stage-count {
+  color: var(--stage-ink);
+  font-variant-numeric: tabular-nums;
+}
+.stage-dot {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--stage-accent);
+  animation: stage-pulse 3s var(--ease-out) infinite;
+}
+@keyframes stage-pulse {
   0% {
-    transform: scale(1);
-    opacity: 0.5;
+    box-shadow: 0 0 0 0 rgba(229, 103, 49, 0.55);
   }
   70%,
   100% {
-    transform: scale(2.6);
-    opacity: 0;
+    box-shadow: 0 0 0 7px rgba(229, 103, 49, 0);
+  }
+}
+
+/* -- The black band under the stage ------------------------------------
+   Carries the subheadline. It is pure black so the stage's faded tail dies
+   into it rather than meeting an edge. */
+
+.void {
+  background: var(--stage-void);
+  color: var(--stage-ink);
+  padding: clamp(96px, 20vh, 220px) clamp(20px, 5vw, 48px);
+  display: flex;
+  justify-content: center;
+}
+.void-copy {
+  font-family: var(--font-stage), Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(22px, 3.1vw, 38px);
+  line-height: 1.42;
+  text-align: center;
+  /* Wide enough that the sentence reads as two or three lines rather than a
+     narrow column of six. */
+  max-width: 30ch;
+  margin: 0;
+  text-wrap: balance;
+}
+.void-ask {
+  color: var(--stage-accent);
+  font-style: italic;
+}
+
+@media (scripting: none) {
+  .stage-char,
+  .stage-eyebrow,
+  .stage-actions,
+  .stage-stat {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-caret,
+  .stage-dot {
+    animation: none;
+  }
+  .stage-actions,
+  .stage-stat,
+  .stage-eyebrow {
+    transition: none;
+  }
+  .stage-cta,
+  .stage-cta:hover,
+  .stage-cta:active,
+  .stage-nav-cta,
+  .stage-nav-cta:hover,
+  .stage-nav-cta:active {
+    transform: none;
   }
 }
 
@@ -819,93 +1164,6 @@ h3,
   transform: translateY(0);
 }
 
-/* -- Hero entrance -----------------------------------------------------
-   Above the fold and seen once per visit, so it can afford to be a little
-   generous. Stagger stays short; a slow cascade reads as a slow site. */
-.enter {
-  opacity: 0;
-  animation: enter 620ms var(--ease-out) forwards;
-}
-.enter-1 {
-  animation-delay: 40ms;
-}
-.enter-2 {
-  animation-delay: 100ms;
-}
-.enter-3 {
-  animation-delay: 170ms;
-}
-.enter-4 {
-  animation-delay: 240ms;
-}
-.enter-5 {
-  animation-delay: 320ms;
-}
-@keyframes enter {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* -- Entrances for content that would otherwise teleport in -------------
-   @starting-style gives an element a "before" state without a mounted flag
-   and a re-render, so these are pure CSS. Browsers without it simply show
-   the content immediately, which is exactly today's behaviour. */
-
-.enter-soft {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 260ms var(--ease-out), transform 260ms var(--ease-out);
-}
-@starting-style {
-  .enter-soft {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
-}
-
-/* The upload preview and the "your square is yours" moment. Each happens
-   exactly once per person, ever, which is the one place a slightly longer,
-   slightly more generous beat is earned. Starting at 0.96 rather than 0:
-   nothing in the real world appears from nothing. */
-.enter-photo {
-  opacity: 1;
-  transform: scale(1);
-  transition: opacity 340ms var(--ease-out), transform 340ms var(--ease-out);
-}
-@starting-style {
-  .enter-photo {
-    opacity: 0;
-    transform: scale(0.96);
-  }
-}
-
-@starting-style {
-  .feed-row {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
-}
-.feed-row {
-  transition: opacity 260ms var(--ease-out), transform 260ms var(--ease-out);
-}
-
-/* Nothing on this page may depend on JavaScript to become visible. */
-@media (scripting: none) {
-  .reveal,
-  .step,
-  .enter {
-    opacity: 1 !important;
-    transform: none !important;
-    animation: none !important;
-  }
-}
-
 /* -- Reduced motion ---------------------------------------------------
    Reduced motion means fewer and gentler animations, not none. Opacity and
    colour still carry meaning -- the accordion still fades, the button
@@ -917,10 +1175,6 @@ h3,
   .step:hover {
     transform: none;
   }
-  .live-dot::after {
-    animation: none;
-    opacity: 0.45;
-  }
   .link-quiet::after {
     transition: opacity 140ms ease;
     transform: scaleX(1);
@@ -929,11 +1183,9 @@ h3,
   .link-quiet:hover::after {
     opacity: 1;
   }
-  .reveal,
-  .enter {
+  .reveal {
     opacity: 1;
     transform: none;
-    animation: none;
     transition: none;
   }
   /* The fades stay -- they explain that something arrived -- the travel goes. */

@@ -124,4 +124,4 @@ export const BRAND_NAME = 'A Million Squares'
  * public name is settled.
  */
 export const CHECKOUT_BRAND_NAME = 'Themillionsquares'
-export const BRAND_TAGLINE = 'You get one. Forever. Choose wisely.'
+export const BRAND_TAGLINE = 'You get one. Forever. Make it count.'
