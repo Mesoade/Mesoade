@@ -10,9 +10,9 @@ import type { HeroPhoto } from '@/lib/hero-photos'
  * Three beats, in order, each waiting on the one before it:
  *
  *   1. the headline types in against a near-empty ground;
- *   2. the photo grid arrives as a single group, fading and settling out of a
- *      slight overscale rather than tile by tile -- eighty staggered tiles
- *      would read as a loading screen, not an entrance;
+ *   2. the photographs are thrown at the wall -- each one falls in on its own,
+ *      tumbled out of the plane and off its cell, overlapping its neighbours,
+ *      and then straightens into the grid;
  *   3. the grid becomes draggable.
  *
  * The ordering is the point. The sentence is what somebody is meant to read,
@@ -32,8 +32,17 @@ const LINES = [
 
 const CHAR_MS = 42
 const LINE_PAUSE_MS = 250
-const GRID_DELAY_MS = 220
-const GRID_SETTLE_MS = 850
+const GRID_DELAY_MS = 170
+
+/**
+ * The scatter. Each tile falls for FLIGHT_MS; the starts are spread evenly
+ * across STAGGER_MS in a scrambled order, so the field arrives everywhere at
+ * once rather than sweeping in from a side. The last tile lands at the sum of
+ * the two, which is when the grid becomes draggable.
+ */
+const STAGGER_MS = 1000
+const FLIGHT_MS = 820
+const GRID_SETTLE_MS = STAGGER_MS + FLIGHT_MS + 60
 
 /** Target width of a tile. Drives how many columns the grid uses. */
 const TILE_PX = 118
@@ -61,6 +70,35 @@ function toneFor(id: string): string {
   const sat = 12 + (h % 17)
   const light = 9 + (h % 13)
   return `hsl(${hue} ${sat}% ${light}%)`
+}
+
+/**
+ * A stable number in [0, 1) from an id and a salt. Deterministic, so a tile's
+ * fall is the same on the server and the client and does not change when the
+ * component re-renders mid-flight.
+ */
+function rand(seed: string, salt: number): number {
+  const s = `${seed}:${salt}`
+  let h = 2166136261 >>> 0
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i)
+    h = Math.imul(h, 16777619) >>> 0
+  }
+  return (h >>> 8) / 16777216
+}
+
+interface Flight {
+  /** Offset from the tile's own cell, as a percentage of its own size. */
+  dx: number
+  dy: number
+  /** In the plane, and out of it. */
+  rot: number
+  rx: number
+  ry: number
+  scale: number
+  /** Seconds. */
+  delay: number
+  z: number
 }
 
 function arrayMove<T>(list: readonly T[], from: number, to: number): T[] {
@@ -216,6 +254,42 @@ export default function HeroStage({
     setOrder(slots.map((s) => s.id))
   }, [shape, slots])
 
+  /*
+   * Where each tile falls from.
+   *
+   * The displacements are a percentage of a tile rather than a pixel count, so
+   * the scatter is the same shape at any column width. The delays are spread
+   * evenly over the stagger but handed out in a scrambled order: evenly spaced
+   * so the arrival rate is steady, scrambled so neighbours do not land
+   * together and give the eye a direction to follow.
+   */
+  const flights = useMemo(() => {
+    const ids = slots.map((s) => s.id)
+    const rank = new Map<string, number>()
+    ids
+      .slice()
+      .sort((a, b) => rand(a, 7) - rand(b, 7))
+      .forEach((id, i) => rank.set(id, i))
+
+    const span = Math.max(1, ids.length - 1)
+    const out = new Map<string, Flight>()
+    for (const id of ids) {
+      out.set(id, {
+        dx: (rand(id, 1) - 0.5) * 90,
+        dy: (rand(id, 2) - 0.5) * 90,
+        rot: (rand(id, 3) - 0.5) * 52,
+        rx: (rand(id, 4) - 0.5) * 76,
+        ry: (rand(id, 5) - 0.5) * 76,
+        scale: 1.03 + rand(id, 6) * 0.09,
+        delay: ((rank.get(id) ?? 0) / span) * (STAGGER_MS / 1000),
+        // Arbitrary, stable depth so the overlaps during the fall do not all
+        // stack the same way down the page.
+        z: 1 + Math.floor(rand(id, 8) * 12),
+      })
+    }
+    return out
+  }, [slots])
+
   const [dragging, setDragging] = useState<string | null>(null)
 
   /**
@@ -260,25 +334,24 @@ export default function HeroStage({
     <section className="stage">
       {/* Decorative throughout: no claim, no square, no live data. */}
       <div className="stage-field" aria-hidden="true">
-        <motion.div
+        <div
           ref={gridRef}
           className="stage-grid"
+          data-phase={phase}
           style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
-          initial={false}
-          animate={{
-            opacity: gridVisible ? 1 : 0,
-            // No overscale to settle out of when motion is unwelcome: the
-            // grid simply is there.
-            scale: gridVisible || reduced ? 1 : 1.06,
-          }}
-          transition={
-            reduced ? { duration: 0 } : { duration: 0.95, ease: [0.23, 1, 0.32, 1] }
-          }
         >
           {order.map((id) => {
             const photo = byId.get(id)
-            if (!photo) return null
+            const flight = flights.get(id)
+            if (!photo || !flight) return null
             return (
+              /*
+               * Two elements, because two different things move this tile and
+               * they each want the transform to themselves. The outer one is
+               * the cell: it holds the drag and the layout animation that
+               * slides neighbours aside. The inner one is the photograph, and
+               * all it ever does is fall into place.
+               */
               <motion.div
                 key={id}
                 layout
@@ -297,21 +370,67 @@ export default function HeroStage({
                     ? { duration: 0 }
                     : { type: 'spring', duration: 0.42, bounce: 0.16 }
                 }
-                style={{ zIndex: dragging === id ? 30 : 1 }}
+                style={{ zIndex: dragging === id ? 30 : flight.z }}
               >
-                {photo.src ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img src={photo.src} alt="" draggable={false} loading="eager" />
-                ) : (
-                  <span
-                    className="stage-tone"
-                    style={{ background: toneFor(id) }}
-                  />
-                )}
+                <motion.div
+                  className="stage-tile-fly"
+                  initial={false}
+                  animate={gridVisible ? 'landed' : 'falling'}
+                  variants={{
+                    falling: {
+                      opacity: 0,
+                      x: `${flight.dx}%`,
+                      y: `${flight.dy}%`,
+                      rotate: flight.rot,
+                      rotateX: flight.rx,
+                      rotateY: flight.ry,
+                      scale: flight.scale,
+                    },
+                    landed: {
+                      opacity: 1,
+                      x: '0%',
+                      y: '0%',
+                      rotate: 0,
+                      rotateX: 0,
+                      rotateY: 0,
+                      scale: 1,
+                    },
+                  }}
+                  transition={
+                    reduced
+                      ? { duration: 0 }
+                      : {
+                          duration: FLIGHT_MS / 1000,
+                          delay: flight.delay,
+                          // Decelerating, no overshoot: these are settling,
+                          // not bouncing. Gentle enough that the tumble is
+                          // still visible once the tile has faded up -- a
+                          // sharper curve spends the whole rotation before
+                          // there is anything on screen to rotate.
+                          ease: [0.33, 1, 0.68, 1],
+                          // Visible almost at once, for the same reason.
+                          opacity: {
+                            duration: 0.14,
+                            delay: flight.delay,
+                            ease: 'linear',
+                          },
+                        }
+                  }
+                >
+                  {photo.src ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img src={photo.src} alt="" draggable={false} loading="eager" />
+                  ) : (
+                    <span
+                      className="stage-tone"
+                      style={{ background: toneFor(id) }}
+                    />
+                  )}
+                </motion.div>
               </motion.div>
             )
           })}
-        </motion.div>
+        </div>
         {/* One veil over the whole grid rather than per-image processing, and
             transparent to the pointer so it cannot swallow a drag. */}
         <div className="stage-veil" />

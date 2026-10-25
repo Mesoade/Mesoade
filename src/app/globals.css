@@ -580,10 +580,32 @@ h3,
 .stage-tile {
   position: relative;
   aspect-ratio: 1 / 1;
-  overflow: hidden;
-  background: #241c15;
   user-select: none;
   -webkit-user-select: none;
+  /* Each cell is its own vanishing point, so a tile tilts around its own
+     centre instead of the whole field sharing one camera. Nothing is clipped
+     here: during the fall the photograph leans out past its cell and over its
+     neighbours, which is the whole effect. */
+  perspective: 800px;
+}
+
+/* The photograph itself. Everything about the entrance happens on this
+   element, so it never contends with the drag and the layout animation that
+   live on the cell above it. */
+.stage-tile-fly {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #241c15;
+  /* Lifts the tile off the wall while it is still falling. Switched once for
+     the whole field rather than animated per tile -- a hundred box-shadow
+     interpolations a frame is a real cost, and by the time a tile is flat it
+     is flush with its neighbours and the shadow has nothing to fall on. */
+  box-shadow: 0 22px 46px -14px rgba(0, 0, 0, 0.8);
+  transition: box-shadow 300ms ease;
+}
+.stage-grid[data-phase='live'] .stage-tile-fly {
+  box-shadow: none;
 }
 .stage-tone {
   display: block;
@@ -943,6 +965,12 @@ h3,
   .stage-actions,
   .stage-stat,
   .stage-eyebrow {
+    transition: none;
+  }
+  /* The tiles are already landed, so there is no fall for the shadow to
+     outlive -- without this it fades out over the first frames instead. */
+  .stage-tile-fly {
+    box-shadow: none;
     transition: none;
   }
   .stage-cta,
