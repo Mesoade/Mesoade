@@ -157,14 +157,8 @@ export default function HeroStage({
     }))
   }, [photos])
 
-  const [order, setOrder] = useState<string[]>(() => pool.map((p) => p.id))
-  const orderRef = useRef(order)
-  orderRef.current = order
-
-  const byId = useMemo(() => new Map(pool.map((p) => [p.id, p])), [pool])
-
   const gridRef = useRef<HTMLDivElement>(null)
-  const [cols, setCols] = useState(8)
+  const [{ cols, count }, setLayout] = useState({ cols: 8, count: 64 })
   const colsRef = useRef(cols)
   colsRef.current = cols
 
@@ -173,14 +167,54 @@ export default function HeroStage({
     if (!el) return
     const measure = () => {
       const w = el.clientWidth
+      const h = el.clientHeight
       if (!w) return
-      setCols(Math.min(MAX_COLS, Math.max(MIN_COLS, Math.round(w / TILE_PX))))
+      const c = Math.min(MAX_COLS, Math.max(MIN_COLS, Math.round(w / TILE_PX)))
+      // One row past the bottom edge, so the field runs out after the stage
+      // does rather than leaving a bare strip under the headline.
+      const rows = Math.max(1, Math.ceil(h / (w / c)) + 1)
+      setLayout((prev) =>
+        prev.cols === c && prev.count === c * rows
+          ? prev
+          : { cols: c, count: c * rows },
+      )
     }
     measure()
     const ro = new ResizeObserver(measure)
     ro.observe(el)
     return () => ro.disconnect()
   }, [])
+
+  /*
+   * The field is sized to the stage, not to the photo list, so the photographs
+   * repeat to fill it. Each repeat gets its own id: two copies of one
+   * photograph are two independent tiles, and dragging one must not move the
+   * other.
+   */
+  const slots = useMemo(() => {
+    const n = pool.length
+    if (n === 0 || count === 0) return []
+    return Array.from({ length: count }, (_, i) => {
+      const photo = pool[i % n]!
+      return { id: `${photo.id}#${Math.floor(i / n)}`, photo }
+    })
+  }, [pool, count])
+
+  const byId = useMemo(() => new Map(slots.map((s) => [s.id, s.photo])), [slots])
+
+  const [order, setOrder] = useState<string[]>(() => slots.map((s) => s.id))
+  const orderRef = useRef(order)
+  orderRef.current = order
+
+  // Only when the field's shape actually changes: a resize that leaves the
+  // tile count alone must not undo somebody's rearranging.
+  const shape = `${pool.length}:${count}`
+  const shapeRef = useRef(shape)
+  useEffect(() => {
+    if (shapeRef.current === shape) return
+    shapeRef.current = shape
+    setOrder(slots.map((s) => s.id))
+  }, [shape, slots])
 
   const [dragging, setDragging] = useState<string | null>(null)
 
