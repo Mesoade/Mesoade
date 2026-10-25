@@ -108,11 +108,7 @@ export default async function HomePage() {
               <p className="eyebrow" style={{ marginBottom: 14 }}>
                 How it works
               </p>
-              <h2>Three steps. The third one is permanent.</h2>
-              <p className="section-lede">
-                No picking a spot. No second attempt. That&apos;s how it&apos;s
-                supposed to work.
-              </p>
+              <h2 style={{ marginBottom: 34 }}>Three steps.</h2>
             </Reveal>
 
             <ol className="steps">
@@ -142,13 +138,7 @@ export default async function HomePage() {
         <section className="section" id="rules">
           <div className="wrap">
             <Reveal>
-              <p className="eyebrow" style={{ marginBottom: 14 }}>
-                Before you buy
-              </p>
-              <h2>The awkward questions, up front.</h2>
-              <p className="section-lede">
-                Answered plainly here rather than discovered afterwards.
-              </p>
+              <h2 style={{ marginBottom: 34 }}>Frequently asked Questions</h2>
             </Reveal>
 
             <Reveal delay={80}>
@@ -156,8 +146,6 @@ export default async function HomePage() {
                 <FaqItem q="Can I change my photo later?">
                   No, and that&apos;s by design. Once your photo goes up,
                   it&apos;s locked forever, no edits, no swapping it out later.
-                  That permanence is the whole point of the wall, not a
-                  limitation we&apos;re planning to fix.
                 </FaqItem>
                 <FaqItem q="Can I buy more than one square?">
                   No, one per person. It&apos;s what keeps this an actual
@@ -175,9 +163,7 @@ export default async function HomePage() {
                   setting yourself a reminder.
                 </FaqItem>
                 <FaqItem q="Can I get a refund?">
-                  No, all sales are final, including if you never get around to
-                  uploading a photo. We&apos;d rather tell you that upfront than
-                  have you find out later.
+                  No, all sales are final.
                 </FaqItem>
                 <FaqItem q="What can't I upload?">
                   Sexually explicit content, illegal content, hate speech or
@@ -195,8 +181,7 @@ export default async function HomePage() {
                 </FaqItem>
                 <FaqItem q="Do I need an account?">
                   No accounts, ever. After you pay, we email you a permanent
-                  link to your square, that link is the only way you&apos;ll
-                  find it again, so hold onto that email.
+                  link to your square.
                 </FaqItem>
               </Faq>
             </Reveal>
