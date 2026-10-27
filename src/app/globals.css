@@ -623,7 +623,18 @@ h3,
 /* Only once the grid is live does it suggest it can be moved. */
 .stage-tile[data-live='true'] {
   cursor: grab;
-  touch-action: none;
+  /*
+   * `pan-y`, not `none`. The field covers the whole first screen on a phone,
+   * so while the tiles claimed every touch there was nowhere left to swipe
+   * and the page could not be scrolled past the hero at all.
+   *
+   * The browser picks an owner for a touch once, from the direction it starts
+   * in, so this splits the gesture cleanly: a swipe up or down scrolls the
+   * page, and a drag that sets off sideways goes to the tile -- and once it
+   * has the gesture it keeps it, so the tile still follows a finger anywhere,
+   * including straight up. Dragging on a mouse is unaffected.
+   */
+  touch-action: pan-y;
 }
 .stage-tile[data-dragging='true'] {
   cursor: grabbing;

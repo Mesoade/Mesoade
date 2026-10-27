@@ -49,9 +49,7 @@ export default async function HomePage() {
           <p className="void-copy">
             A million people will each get to do this exactly once. Somewhere in
             that million is your one square.{' '}
-            <span className="void-ask">
-              What&apos;s the photo you&apos;d actually want it to be?
-            </span>
+            <span className="void-ask">What photo would that be?</span>
           </p>
         </section>
 

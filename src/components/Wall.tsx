@@ -81,12 +81,24 @@ export default function Wall({ storageBaseUrl, activeRing, initialCells }: WallP
   const dotsRef = useRef<{ pattern: CanvasPattern | null; dpr: number } | null>(null)
   const viewRef = useRef({ scale: 1, offsetX: 0, offsetY: 0 })
   const frameRef = useRef<number | null>(null)
-  const pointerRef = useRef<{
-    dragging: boolean
-    moved: boolean
+  /*
+   * Every pointer currently down, by id.
+   *
+   * One is a pan. Two is a pinch -- which is the only way to zoom on a
+   * touchscreen, there being no wheel. Tracking only the most recent pointer
+   * meant a second finger silently stole the pan and the wall lurched.
+   */
+  const pointersRef = useRef<Map<number, { x: number; y: number }>>(new Map())
+  const gestureRef = useRef<{
+    mode: 'none' | 'pan' | 'pinch'
+    /** Pan anchor, or the midpoint between two fingers. */
     lastX: number
     lastY: number
-  }>({ dragging: false, moved: false, lastX: 0, lastY: 0 })
+    /** Distance between the two fingers, for the pinch ratio. */
+    dist: number
+    /** Set once the gesture has travelled far enough not to be a tap. */
+    moved: boolean
+  }>({ mode: 'none', lastX: 0, lastY: 0, dist: 0, moved: false })
 
   const [category, setCategory] = useState<string>('')
   const [hovered, setHovered] = useState<Cell | null>(null)
@@ -303,47 +315,103 @@ export default function Wall({ storageBaseUrl, activeRing, initialCells }: WallP
       loadTimer = setTimeout(() => void loadCells(), 220)
     }
 
-    const onPointerDown = (e: PointerEvent) => {
-      pointerRef.current = {
-        dragging: true,
-        moved: false,
-        lastX: e.clientX,
-        lastY: e.clientY,
+    /** Re-reads the two live pointers and re-anchors the gesture to them. */
+    const resyncGesture = () => {
+      const pts = [...pointersRef.current.values()]
+      const g = gestureRef.current
+      if (pts.length >= 2) {
+        const [a, b] = pts as [{ x: number; y: number }, { x: number; y: number }]
+        g.mode = 'pinch'
+        g.lastX = (a.x + b.x) / 2
+        g.lastY = (a.y + b.y) / 2
+        g.dist = Math.hypot(a.x - b.x, a.y - b.y)
+      } else if (pts.length === 1) {
+        const a = pts[0]!
+        g.mode = 'pan'
+        g.lastX = a.x
+        g.lastY = a.y
+        g.dist = 0
+      } else {
+        g.mode = 'none'
       }
+    }
+
+    const onPointerDown = (e: PointerEvent) => {
+      pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+      // A second finger ends any chance this was a tap.
+      if (pointersRef.current.size > 1) gestureRef.current.moved = true
+      else gestureRef.current.moved = false
+      resyncGesture()
       canvas.setPointerCapture(e.pointerId)
     }
 
     const onPointerMove = (e: PointerEvent) => {
-      const p = pointerRef.current
-      if (p.dragging) {
-        const dx = e.clientX - p.lastX
-        const dy = e.clientY - p.lastY
-        if (Math.abs(dx) > 2 || Math.abs(dy) > 2) p.moved = true
-        viewRef.current.offsetX += dx
-        viewRef.current.offsetY += dy
-        p.lastX = e.clientX
-        p.lastY = e.clientY
+      const pts = pointersRef.current
+      const g = gestureRef.current
+
+      if (!pts.has(e.pointerId)) {
+        const cell = cellAtPointer(canvas, viewRef.current, e, cellsRef.current)
+        setHovered(cell)
+        return
+      }
+      pts.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      if (g.mode === 'pinch' && pts.size >= 2) {
+        const [a, b] = [...pts.values()] as [
+          { x: number; y: number },
+          { x: number; y: number },
+        ]
+        const dist = Math.hypot(a.x - b.x, a.y - b.y)
+        const midX = (a.x + b.x) / 2
+        const midY = (a.y + b.y) / 2
+
+        // Zoom about the midpoint, then carry the midpoint's own travel, so a
+        // pinch that also slides moves the wall with the fingers.
+        if (g.dist > 0 && dist > 0) zoomAt(midX, midY, dist / g.dist)
+        viewRef.current.offsetX += midX - g.lastX
+        viewRef.current.offsetY += midY - g.lastY
+
+        g.dist = dist
+        g.lastX = midX
+        g.lastY = midY
+        g.moved = true
         clampOffsets(canvas, viewRef.current)
         scheduleDraw()
         debouncedLoad()
         return
       }
-      const cell = cellAtPointer(canvas, viewRef.current, e, cellsRef.current)
-      setHovered(cell)
+
+      if (g.mode === 'pan') {
+        const dx = e.clientX - g.lastX
+        const dy = e.clientY - g.lastY
+        if (Math.abs(dx) > 2 || Math.abs(dy) > 2) g.moved = true
+        viewRef.current.offsetX += dx
+        viewRef.current.offsetY += dy
+        g.lastX = e.clientX
+        g.lastY = e.clientY
+        clampOffsets(canvas, viewRef.current)
+        scheduleDraw()
+        debouncedLoad()
+      }
     }
 
-    const onPointerUp = (e: PointerEvent) => {
-      const p = pointerRef.current
-      p.dragging = false
+    const endPointer = (e: PointerEvent) => {
+      const had = pointersRef.current.delete(e.pointerId)
       canvas.releasePointerCapture?.(e.pointerId)
-      if (p.moved) return
+      const wasPinch = gestureRef.current.mode === 'pinch'
+      // Lifting one finger of a pinch re-anchors the pan to the finger still
+      // down, instead of jumping the wall by the gap between them.
+      resyncGesture()
+      if (!had || wasPinch || gestureRef.current.moved) return
+      if (pointersRef.current.size > 0) return
       const cell = cellAtPointer(canvas, viewRef.current, e, cellsRef.current)
       if (cell) window.location.href = `/s/${cell.i}`
     }
 
     canvas.addEventListener('pointerdown', onPointerDown)
     canvas.addEventListener('pointermove', onPointerMove)
-    canvas.addEventListener('pointerup', onPointerUp)
+    canvas.addEventListener('pointerup', endPointer)
+    canvas.addEventListener('pointercancel', endPointer)
     canvas.addEventListener('pointerleave', () => setHovered(null))
 
     return () => {
@@ -351,7 +419,8 @@ export default function Wall({ storageBaseUrl, activeRing, initialCells }: WallP
       canvas.removeEventListener('wheel', onWheel)
       canvas.removeEventListener('pointerdown', onPointerDown)
       canvas.removeEventListener('pointermove', onPointerMove)
-      canvas.removeEventListener('pointerup', onPointerUp)
+      canvas.removeEventListener('pointerup', endPointer)
+      canvas.removeEventListener('pointercancel', endPointer)
       if (loadTimer) clearTimeout(loadTimer)
       if (frameRef.current !== null) cancelAnimationFrame(frameRef.current)
     }
