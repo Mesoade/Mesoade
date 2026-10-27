@@ -94,7 +94,7 @@ export const env = {
     return optional('EMAIL_DRIVER', 'console') as 'console' | 'resend'
   },
   get emailFrom() {
-    return optional('EMAIL_FROM', 'A Million Squares <hello@amillionsquaresworld.com>')
+    return optional('EMAIL_FROM', 'The Million Squares <hello@amillionsquaresworld.com>')
   },
   get csamScanner() {
     return optional('CSAM_SCANNER', 'none')
@@ -111,17 +111,17 @@ export const UPLOAD_WINDOW_DAYS = 7
 /** Time capsule delivery offsets, in years. */
 export const TIME_CAPSULE_YEARS = [1, 5, 10, 25] as const
 
-export const BRAND_NAME = 'A Million Squares'
+export const BRAND_NAME = 'The Million Squares'
 
 /**
  * The name shown on the Stripe Checkout page and on the buyer's card receipt.
  *
- * Deliberately separate from BRAND_NAME, and currently different from it. Worth
- * knowing why that is a risk rather than a feature: people check that the name
+ * Kept as its own constant because it answers to Stripe rather than to the
+ * site, but it must read as the same business: people check that the name
  * taking their money matches the site they are on, and a mismatch at the card
  * field is a well-known cause of abandoned checkouts and of chargebacks raised
- * as "I don't recognise this charge". Set both to the same string once the
- * public name is settled.
+ * as "I don't recognise this charge". The statement descriptor configured in
+ * the Stripe dashboard should say the same thing.
  */
-export const CHECKOUT_BRAND_NAME = 'Themillionsquares'
+export const CHECKOUT_BRAND_NAME = BRAND_NAME
 export const BRAND_TAGLINE = 'You get one. Forever. Make it count.'

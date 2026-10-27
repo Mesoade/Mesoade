@@ -1,4 +1,4 @@
-# A Million Squares
+# The Million Squares
 
 1,000,000 squares. $10 each. One per person, ever. You upload one photo and it
 is locked forever.

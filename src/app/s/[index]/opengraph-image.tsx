@@ -10,7 +10,7 @@ import { formatSquareLabel } from '@/lib/wall/geometry'
  * The square-format card people actually post to Instagram is a separate,
  * larger image -- see ./card/route.tsx.
  */
-export const alt = 'A square on A Million Squares'
+export const alt = `A square on ${BRAND_NAME}`
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 export const dynamic = 'force-dynamic'
