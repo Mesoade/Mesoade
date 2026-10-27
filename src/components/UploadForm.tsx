@@ -155,8 +155,7 @@ export default function UploadForm({ squareIndex, token, sessionId }: Props) {
 
       <label className="field">
         <span>
-          What is your story{' '}
-          <em style={{ color: 'var(--text-faint)' }}>(optional)</em>
+          What is your story
         </span>
         <textarea
           value={caption}
