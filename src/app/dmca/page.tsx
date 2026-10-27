@@ -37,12 +37,12 @@ export default function DmcaPage() {
         <li>Identification of the copyrighted work you say has been infringed.</li>
         <li>
           Identification of the material you say is infringing, with enough detail
-          for us to locate it — the square&apos;s URL (for example{' '}
+          for us to locate it, the square&apos;s URL (for example{' '}
           <code>/s/482910</code>) is ideal.
         </li>
         <li>Your name, address, telephone number, and email address.</li>
         <li>
-          A statement that you have a good-faith belief that the use is not
+          A statement that you have a good faith belief that the use is not
           authorised by the copyright owner, its agent, or the law.
         </li>
         <li>
@@ -56,7 +56,7 @@ export default function DmcaPage() {
       <p>
         We remove or disable access to material that is the subject of a valid
         notice. The square itself remains permanently owned by its buyer and
-        displays the neutral placeholder; it is not resold, and no refund is
+        displays the neutral placeholder, it is not resold, and no refund is
         given. We will notify the buyer and pass on your notice.
       </p>
 
@@ -65,13 +65,13 @@ export default function DmcaPage() {
         If your content was removed and you believe that was a mistake or
         misidentification, you may send a counter-notice under 17 U.S.C. §
         512(g)(3) to the agent above. Note that restoring a square&apos;s content
-        is subject to the same permanence rules as everything else on the Site,
+        is subject to the same permanence rules as everything else on the site,
         and we will explain what is and is not possible when we respond.
       </p>
 
       <h2>Repeat infringers</h2>
       <p>
-        Because each person may only ever hold one square, our repeat-infringer
+        Because each person may only ever hold one square, our repeat infringer
         policy is straightforward: we will not sell another square to someone
         whose content has been removed for infringement, and we will remove
         infringing content wherever we find it.

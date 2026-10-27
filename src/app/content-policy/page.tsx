@@ -29,8 +29,8 @@ export default function ContentPolicyPage() {
         <li>
           <strong>Hate speech or harassment.</strong> Content attacking or
           demeaning people on the basis of race, ethnicity, national origin,
-          religion, disability, sex, gender identity, sexual orientation, or age;
-          and content targeting, threatening, or bullying any individual.
+          religion, disability, sex, gender identity, sexual orientation, or
+          age, and content targeting, threatening, or bullying any individual.
         </li>
         <li>
           <strong>Scams and fraudulent claims.</strong> Deceptive offers, phishing,
@@ -57,11 +57,11 @@ export default function ContentPolicyPage() {
       <p>
         Content appears immediately and is reviewed by a human moderator
         afterwards. Anyone can report a square using the &quot;Report this
-        square&quot; button on its page — no account needed — and reports are how
+        square&quot; button on its page, no account needed, and reports are how
         we find most problems.
       </p>
       <p>
-        Child sexual abuse material is the one exception to after-the-fact
+        Child sexual abuse material is the one exception to after the fact
         review: every upload is scanned automatically for it before it can sit
         publicly for any length of time.
       </p>
