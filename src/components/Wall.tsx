@@ -456,11 +456,6 @@ export default function Wall({ storageBaseUrl, activeRing, initialCells }: WallP
             ))}
           </select>
         </label>
-        <p className="hint" style={{ margin: 0, flex: '1 1 260px' }}>
-          Drag to pan, scroll to zoom, click a square to open it. The dotted
-          field is the part of the million that has not opened yet — nothing
-          there is claimed or for sale.
-        </p>
       </div>
 
       <div
