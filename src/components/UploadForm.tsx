@@ -3,7 +3,6 @@
 import { useRef, useState } from 'react'
 import { CATEGORIES } from '@/lib/categories'
 import { MAX_CAPTION_LENGTH, MAX_UPLOAD_BYTES } from '@/lib/image'
-import { formatSquareLabel } from '@/lib/wall/geometry'
 
 interface Props {
   squareIndex: number
@@ -16,7 +15,6 @@ export default function UploadForm({ squareIndex, token, sessionId }: Props) {
   const [preview, setPreview] = useState<string | null>(null)
   const [fileName, setFileName] = useState<string | null>(null)
   const [caption, setCaption] = useState('')
-  const [link, setLink] = useState('')
   const [category, setCategory] = useState('')
   const [confirmed, setConfirmed] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -57,7 +55,6 @@ export default function UploadForm({ squareIndex, token, sessionId }: Props) {
     form.set('squareIndex', String(squareIndex))
     form.set('image', file)
     form.set('caption', caption)
-    form.set('link', link)
     form.set('category', category)
     if (token) form.set('token', token)
     if (sessionId) form.set('sessionId', sessionId)
@@ -105,10 +102,6 @@ export default function UploadForm({ squareIndex, token, sessionId }: Props) {
           If you could only ever post one photo online, permanently, which would
           it be?
         </p>
-        <p style={{ margin: '10px 0 0', color: 'var(--text-faint)', fontSize: 14, lineHeight: 1.6 }}>
-          This is square {formatSquareLabel(squareIndex)}, and this is the only
-          time you will ever choose. There is no edit button afterwards.
-        </p>
       </div>
 
       <label className="field">
@@ -132,9 +125,7 @@ export default function UploadForm({ squareIndex, token, sessionId }: Props) {
       </label>
       <p className="hint" style={{ marginTop: -8, marginBottom: 18 }}>
         JPEG, PNG, WebP, or GIF. Up to{' '}
-        {Math.floor(MAX_UPLOAD_BYTES / 1024 / 1024)} MB. Squares are square, so
-        anything taller or wider than it is high is shown whole, centred, with
-        space either side — nothing is cropped away.
+        {Math.floor(MAX_UPLOAD_BYTES / 1024 / 1024)} MB.
       </p>
 
       {preview && (
@@ -164,13 +155,13 @@ export default function UploadForm({ squareIndex, token, sessionId }: Props) {
 
       <label className="field">
         <span>
-          Caption <em style={{ color: 'var(--text-faint)' }}>(optional)</em>
+          What is your story{' '}
+          <em style={{ color: 'var(--text-faint)' }}>(optional)</em>
         </span>
         <textarea
           value={caption}
           maxLength={MAX_CAPTION_LENGTH}
           onChange={(e) => setCaption(e.target.value)}
-          placeholder="A line about what this is, or why it's this one."
         />
         <span style={{ fontSize: 12, color: 'var(--text-faint)' }}>
           {caption.length}/{MAX_CAPTION_LENGTH}
@@ -179,7 +170,7 @@ export default function UploadForm({ squareIndex, token, sessionId }: Props) {
 
       <label className="field">
         <span>
-          What is this? <em style={{ color: 'var(--text-faint)' }}>(optional)</em>
+          Category <em style={{ color: 'var(--text-faint)' }}>(optional)</em>
         </span>
         <select value={category} onChange={(e) => setCategory(e.target.value)}>
           <option value="">Prefer not to say</option>
@@ -192,18 +183,6 @@ export default function UploadForm({ squareIndex, token, sessionId }: Props) {
         <span style={{ fontSize: 12, color: 'var(--text-faint)' }}>
           Lets people browse the wall by theme.
         </span>
-      </label>
-
-      <label className="field">
-        <span>
-          Link <em style={{ color: 'var(--text-faint)' }}>(optional)</em>
-        </span>
-        <input
-          type="url"
-          value={link}
-          onChange={(e) => setLink(e.target.value)}
-          placeholder="https://"
-        />
       </label>
 
       <label
@@ -227,8 +206,8 @@ export default function UploadForm({ squareIndex, token, sessionId }: Props) {
         <span>
           I understand this is{' '}
           <strong style={{ color: 'var(--text)' }}>permanent and final</strong>.
-          This photo, caption, and link can never be changed or removed by me,
-          and I have the right to publish this image.
+          This photo and my story behind it can never be changed or removed by
+          me, and I have the right to publish this image.
         </span>
       </label>
 

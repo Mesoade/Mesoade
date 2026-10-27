@@ -133,8 +133,12 @@ function readWebp(b: Buffer): ImageInfo | null {
   return null
 }
 
-/** Optional caption and link limits, kept modest and enforced server-side. */
-export const MAX_CAPTION_LENGTH = 280
+/**
+ * Optional caption and link limits, enforced server-side as well as in the
+ * form. The caption is the buyer's story about their photograph, so it has
+ * room for a few sentences rather than a line.
+ */
+export const MAX_CAPTION_LENGTH = 500
 export const MAX_LINK_LENGTH = 300
 
 export function normaliseLink(raw: string): string | null {
