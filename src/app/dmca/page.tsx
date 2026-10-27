@@ -76,15 +76,6 @@ export default function DmcaPage() {
         whose content has been removed for infringement, and we will remove
         infringing content wherever we find it.
       </p>
-
-      <p className="placeholder-note">
-        <strong>Before launch:</strong> register this designated agent with the
-        U.S. Copyright Office at{' '}
-        <a href="https://dmca.copyright.gov/">dmca.copyright.gov</a>. It costs $6
-        and renews every three years. Safe harbour under DMCA 512(c) is not
-        available without it — the page above is not a substitute for the
-        registration.
-      </p>
     </LegalPage>
   )
 }

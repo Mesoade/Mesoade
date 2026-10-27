@@ -19,10 +19,9 @@ environment:
 
 ## Legal actions
 
-- [ ] **Register a DMCA designated agent** with the U.S. Copyright Office at
-      <https://dmca.copyright.gov/>. $6, renews every three years. Without the
-      registration there is no DMCA 512(c) safe harbour, and the `/dmca` page is
-      not a substitute for it.
+- [x] **Register a DMCA designated agent** with the U.S. Copyright Office at
+      <https://dmca.copyright.gov/>. $6, **renews every three years** — diarise
+      the renewal, the safe harbour lapses with it.
 - [ ] Have a lawyer read the Terms and Privacy Policy. They were drafted to
       match the product's actual behaviour — the no-refund rule, permanent
       content, one square per person, 18+ — but they are a starting point, not
@@ -60,7 +59,7 @@ See `docs/moderation.md`.
       placeholders.
 - [ ] `NEXT_PUBLIC_SITE_URL` set to the live domain — it is baked into Stripe
       redirect URLs, emails, and share cards.
-- [ ] Cron hitting `/api/cron/dispatch` hourly. `vercel.json` configures this on
+- [ ] Cron hitting `/api/cron/dispatch` daily. `vercel.json` configures this on
       Vercel; on Vercel, setting `CRON_SECRET` makes the platform send the
       bearer token automatically.
 
