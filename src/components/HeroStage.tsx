@@ -101,6 +101,32 @@ interface Flight {
   z: number
 }
 
+/**
+ * Whether this device drives a real cursor.
+ *
+ * Framer's pan listeners are passive and it never calls preventDefault, so the
+ * only thing that can stop a drag from eating a scroll is CSS `touch-action`
+ * -- and on a phone the field covers the whole first screen, so any setting
+ * that lets the tile have the gesture takes the page's scroll with it. A thumb
+ * swipe arcs rather than running straight up, so even `pan-y` hands a good
+ * share of ordinary scrolls to the drag.
+ *
+ * So the rearranging is for pointers that can hover and click precisely. It is
+ * the same test the hover outline uses, which means a touchscreen was never
+ * told the tiles could be moved in the first place.
+ */
+function useFinePointer(): boolean {
+  const [fine, setFine] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(hover: hover) and (pointer: fine)')
+    const sync = () => setFine(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
+  return fine
+}
+
 function arrayMove<T>(list: readonly T[], from: number, to: number): T[] {
   const next = list.slice()
   const [item] = next.splice(from, 1)
@@ -290,6 +316,7 @@ export default function HeroStage({
     return out
   }, [slots])
 
+  const finePointer = useFinePointer()
   const [dragging, setDragging] = useState<string | null>(null)
 
   /**
@@ -328,7 +355,8 @@ export default function HeroStage({
   )
 
   const gridVisible = phase !== 'typing'
-  const interactive = phase === 'live'
+  // Settled, and on a device where taking the gesture costs nothing.
+  const interactive = phase === 'live' && finePointer
 
   return (
     <section className="stage">

@@ -624,17 +624,12 @@ h3,
 .stage-tile[data-live='true'] {
   cursor: grab;
   /*
-   * `pan-y`, not `none`. The field covers the whole first screen on a phone,
-   * so while the tiles claimed every touch there was nowhere left to swipe
-   * and the page could not be scrolled past the hero at all.
-   *
-   * The browser picks an owner for a touch once, from the direction it starts
-   * in, so this splits the gesture cleanly: a swipe up or down scrolls the
-   * page, and a drag that sets off sideways goes to the tile -- and once it
-   * has the gesture it keeps it, so the tile still follows a finger anywhere,
-   * including straight up. Dragging on a mouse is unaffected.
+   * No `touch-action` here, deliberately. Any value that lets a tile claim a
+   * touch takes the page's scroll with it, because the field covers the whole
+   * first screen -- and the component only marks tiles live for a pointer that
+   * can hover, so on a phone there is no drag for the browser to arbitrate
+   * against and scrolling is simply native.
    */
-  touch-action: pan-y;
 }
 .stage-tile[data-dragging='true'] {
   cursor: grabbing;
