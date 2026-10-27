@@ -30,8 +30,8 @@ const LINES = [
   { text: 'Make it count.', accent: false },
 ] as const
 
-const CHAR_MS = 42
-const LINE_PAUSE_MS = 250
+const CHAR_MS = 62
+const LINE_PAUSE_MS = 300
 const GRID_DELAY_MS = 170
 
 /**
