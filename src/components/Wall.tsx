@@ -67,6 +67,9 @@ function maxScaleFor(canvas: HTMLCanvasElement): number {
   return Math.max(60, Math.round(shortest * 0.9))
 }
 const IMAGE_SCALE_THRESHOLD = 7 // px per cell before images are worth loading
+/** Narrowest first view, in cells across. Keeps a sparse wall from opening
+ *  on a handful of giant squares. */
+const DEFAULT_SPAN_CELLS = 22
 const IMAGE_CACHE_CAP = 900
 const DOT_SPACING = 6 // px between locked-region dots, in screen space
 
@@ -284,12 +287,32 @@ export default function Wall({ storageBaseUrl, activeRing, initialCells }: WallP
     const wrap = wrapRef.current
     if (!canvas || !wrap) return
 
-    // Start centred, showing the whole field.
-    const fit = Math.min(canvas.clientWidth, canvas.clientHeight) / GRID_SIZE
+    /*
+     * Open on the claimed cluster, not on the whole million.
+     *
+     * Fitting the entire grid put a thousand cells across the canvas, which
+     * made every photograph sub-pixel and the wall read as abandoned when it
+     * is merely young. The first view frames the region that is currently
+     * open, with room around it to show it sits inside something much larger,
+     * and never starts zoomed out past the point where photographs load at
+     * all. Zooming out to the full grid is unchanged: MIN_SCALE still sits
+     * below the whole-field fit.
+     */
+    const b = ringBounds(activeRing)
+    const regionCells = Math.max(b.maxX - b.minX + 1, b.maxY - b.minY + 1)
+    // Twice the open region, so the claimed squares sit in context rather than
+    // filling the frame -- and a floor, so a wall with four claims on it does
+    // not open on four enormous tiles.
+    const span = Math.max(DEFAULT_SPAN_CELLS, regionCells * 2)
+    const shortest = Math.min(canvas.clientWidth, canvas.clientHeight)
     const v = viewRef.current
-    v.scale = clamp(fit * 0.92, MIN_SCALE, maxScaleFor(canvas))
-    v.offsetX = (canvas.clientWidth - GRID_SIZE * v.scale) / 2
-    v.offsetY = (canvas.clientHeight - GRID_SIZE * v.scale) / 2
+    v.scale = clamp(shortest / span, IMAGE_SCALE_THRESHOLD, maxScaleFor(canvas))
+    // Centre of the open region, which is the centre of the wall.
+    const cx = (b.minX + b.maxX + 1) / 2
+    const cy = (b.minY + b.maxY + 1) / 2
+    v.offsetX = canvas.clientWidth / 2 - cx * v.scale
+    v.offsetY = canvas.clientHeight / 2 - cy * v.scale
+    clampOffsets(canvas, v)
     setReady(true)
     scheduleDraw()
     void loadCells()
@@ -424,7 +447,7 @@ export default function Wall({ storageBaseUrl, activeRing, initialCells }: WallP
       if (loadTimer) clearTimeout(loadTimer)
       if (frameRef.current !== null) cancelAnimationFrame(frameRef.current)
     }
-  }, [loadCells, scheduleDraw, zoomAt])
+  }, [activeRing, loadCells, scheduleDraw, zoomAt])
 
   useEffect(() => {
     scheduleDraw()

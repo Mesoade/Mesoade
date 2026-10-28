@@ -70,8 +70,8 @@ export default async function HomePage() {
               <span className="num" style={{ color: 'var(--vault-ink)' }}>
                 {stats.activeRegion.remaining.toLocaleString('en-US')}
               </span>{' '}
-              are left in the region open right now. Look around before you
-              decide what yours will be.
+              are left in the region open right now. Zoom to the center of
+              the squares to see uploaded pictures.
             </p>
 
             <Wall
