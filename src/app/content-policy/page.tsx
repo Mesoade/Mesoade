@@ -38,7 +38,7 @@ export default function ContentPolicyPage() {
           services, or affiliations.
         </li>
         <li>
-          <strong>Doxxing and private information.</strong> Other people&apos;s
+          <strong>Doxxing and private information.</strong> Other people’s
           addresses, phone numbers, identification documents, financial details,
           or any private information published without consent.
         </li>
@@ -56,8 +56,8 @@ export default function ContentPolicyPage() {
       <h2>How this is enforced</h2>
       <p>
         Content appears immediately and is reviewed by a human moderator
-        afterwards. Anyone can report a square using the &quot;Report this
-        square&quot; button on its page, no account needed, and reports are how
+        afterwards. Anyone can report a square using the “Report this
+        square” button on its page, no account needed, and reports are how
         we find most problems.
       </p>
       <p>
