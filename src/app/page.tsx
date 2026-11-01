@@ -64,7 +64,7 @@ export default async function HomePage() {
             <h2 style={{ fontSize: 'clamp(28px, 3.6vw, 38px)', margin: '0 0 10px' }}>
               Every square that has been claimed.
             </h2>
-            <p className="section-lede" style={{ marginBottom: 26 }}>
+            <p className="section-lede" style={{ marginBottom: 8 }}>
               Squares fill outward from the centre, so the earliest buyers
               really are closest to the middle.{' '}
               <span className="num" style={{ color: 'var(--vault-ink)' }}>
@@ -72,6 +72,9 @@ export default async function HomePage() {
               </span>{' '}
               are left in the region open right now. Zoom to the center of
               the squares to see uploaded pictures.
+            </p>
+            <p className="section-lede" style={{ marginBottom: 26 }}>
+              No names shown, ever. Just your photo and your story.
             </p>
 
             <Wall
