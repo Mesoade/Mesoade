@@ -1,0 +1,20 @@
+{
+  "name": "million-squares-launch-video",
+  "private": true,
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts LaunchVideo out/launch-video.mp4 --codec=h264 --crf=18",
+    "social": "ffmpeg -y -i out/launch-video.mp4 -f lavfi -i anullsrc=r=48000:cl=stereo -shortest -map 0:v -map 1:a -c:v libx264 -profile:v high -level 4.2 -preset slow -crf 18 -pix_fmt yuv420p -color_range tv -colorspace bt709 -color_primaries bt709 -color_trc bt709 -c:a aac -b:a 128k -movflags +faststart out/million-squares-launch.mp4",
+    "build": "npm run render && npm run social"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.539",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "remotion": "4.0.539"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.0",
+    "typescript": "^5.7.2"
+  }
+}
