@@ -941,15 +941,6 @@ h3,
   max-width: 1120px;
 }
 
-.why-eyebrow {
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 11px;
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  color: var(--stage-accent);
-  margin: 0 0 clamp(20px, 3vh, 34px);
-}
-
 .why-title {
   font-family: var(--font-stage), Georgia, serif;
   font-weight: 400;

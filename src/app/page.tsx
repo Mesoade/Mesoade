@@ -48,7 +48,6 @@ export default async function HomePage() {
             for, so it says so plainly here, before the wall asks for money. */}
         <section className="void">
           <div className="why">
-            <p className="why-eyebrow">Why this exists</p>
             <h2 className="why-title">
               One day, all we&apos;ll have left are the memories we made.
             </h2>
