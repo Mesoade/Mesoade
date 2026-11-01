@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react'
 import { CATEGORIES } from '@/lib/categories'
 import { MAX_CAPTION_LENGTH, MAX_UPLOAD_BYTES } from '@/lib/image'
+import { shrinkForUpload } from '@/lib/shrink-image'
 
 interface Props {
   squareIndex: number
@@ -18,23 +19,49 @@ export default function UploadForm({ squareIndex, token, sessionId }: Props) {
   const [category, setCategory] = useState('')
   const [confirmed, setConfirmed] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [preparing, setPreparing] = useState(false)
+  const [shrunk, setShrunk] = useState(false)
+  /** What actually gets uploaded: the original, or a smaller redraw of it. */
+  const uploadRef = useRef<File | null>(null)
   const [busy, setBusy] = useState(false)
 
-  function onPick(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
+  async function onPick(e: React.ChangeEvent<HTMLInputElement>) {
+    const picked = e.target.files?.[0]
     setError(null)
-    if (!file) {
+    setShrunk(false)
+    uploadRef.current = null
+    if (!picked) {
       setPreview(null)
       setFileName(null)
       return
     }
+
+    // Shrink first, then judge the size: an iPhone hands over a JPEG two or
+    // three times the size of the HEIC its owner saw, so the file as picked is
+    // not the file worth refusing.
+    setPreparing(true)
+    let file = picked
+    try {
+      file = await shrinkForUpload(picked)
+    } catch {
+      // Undecodable here is not necessarily undecodable on the server, and the
+      // server gives a better message about formats than we can.
+      file = picked
+    }
+    setPreparing(false)
+
     if (file.size > MAX_UPLOAD_BYTES) {
-      setError(`That file is over ${Math.floor(MAX_UPLOAD_BYTES / 1024 / 1024)} MB.`)
+      setError(
+        `That photo is too large to upload, even after resizing. Try a smaller one.`,
+      )
       setPreview(null)
       setFileName(null)
       return
     }
-    setFileName(file.name)
+
+    uploadRef.current = file
+    setShrunk(file !== picked)
+    setFileName(picked.name)
     setPreview((old) => {
       if (old) URL.revokeObjectURL(old)
       return URL.createObjectURL(file)
@@ -43,7 +70,7 @@ export default function UploadForm({ squareIndex, token, sessionId }: Props) {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
-    const file = fileRef.current?.files?.[0]
+    const file = uploadRef.current ?? fileRef.current?.files?.[0]
     if (!file) {
       setError('Choose a photo first.')
       return
@@ -61,9 +88,24 @@ export default function UploadForm({ squareIndex, token, sessionId }: Props) {
 
     try {
       const res = await fetch('/api/upload', { method: 'POST', body: form })
-      const body = (await res.json()) as { ok?: boolean; error?: string; squareUrl?: string }
+      // A rejection by the platform rather than by this app -- a body over the
+      // size limit, say -- comes back as HTML, and parsing it as JSON used to
+      // throw into the catch below. That reported a perfectly healthy server
+      // as unreachable, and hid a real 413 for as long as it took to read the
+      // request log.
+      let body: { ok?: boolean; error?: string; squareUrl?: string } = {}
+      try {
+        body = (await res.json()) as typeof body
+      } catch {
+        body = {}
+      }
       if (!res.ok || !body.ok) {
-        setError(body.error ?? 'Upload failed. Please try again.')
+        setError(
+          body.error ??
+            (res.status === 413
+              ? 'That photo is too large to upload. Try a smaller one.'
+              : `Upload failed (${res.status}). Please try again.`),
+        )
         setBusy(false)
         return
       }
@@ -124,8 +166,9 @@ export default function UploadForm({ squareIndex, token, sessionId }: Props) {
         />
       </label>
       <p className="hint" style={{ marginTop: -8, marginBottom: 18 }}>
-        JPEG, PNG, WebP, or GIF. Up to{' '}
-        {Math.floor(MAX_UPLOAD_BYTES / 1024 / 1024)} MB.
+        JPEG, PNG, WebP, or GIF. Large photos are resized automatically.
+        {preparing && ' Preparing your photo…'}
+        {shrunk && !preparing && ' Resized to upload.'}
       </p>
 
       {preview && (
@@ -210,8 +253,8 @@ export default function UploadForm({ squareIndex, token, sessionId }: Props) {
         </span>
       </label>
 
-      <button className="btn" type="submit" disabled={busy || !confirmed}>
-        {busy ? 'Uploading…' : 'Lock it in, forever'}
+      <button className="btn" type="submit" disabled={busy || preparing || !confirmed}>
+        {busy ? 'Uploading…' : preparing ? 'Preparing…' : 'Lock it in, forever'}
       </button>
     </form>
   )

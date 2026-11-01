@@ -7,7 +7,17 @@
  * their photo ready.
  */
 
-export const MAX_UPLOAD_BYTES = 12 * 1024 * 1024 // 12 MB
+/*
+ * The hard ceiling, server side.
+ *
+ * Four megabytes, not twelve, because the platform refuses any request body
+ * over 4.5 MB before a line of this runs -- so a larger limit here was a
+ * promise the deployment could not keep, and the rejection surfaced to the
+ * buyer as "could not reach the server". The form now shrinks anything near
+ * this before sending, so the number people meet in practice is far lower
+ * than the size of photograph they are allowed to choose.
+ */
+export const MAX_UPLOAD_BYTES = 4 * 1024 * 1024 // 4 MB
 export const MIN_DIMENSION = 200
 export const MAX_DIMENSION = 8000
 
