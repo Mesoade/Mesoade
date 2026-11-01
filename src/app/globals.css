@@ -932,27 +932,115 @@ h3,
 .void {
   background: var(--stage-void);
   color: var(--stage-ink);
-  padding: clamp(96px, 20vh, 220px) clamp(20px, 5vw, 48px);
+  padding: clamp(84px, 14vh, 160px) var(--stage-gutter);
   display: flex;
   justify-content: center;
 }
-.void-copy {
+.why {
+  width: 100%;
+  max-width: 1120px;
+}
+
+.why-eyebrow {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--stage-accent);
+  margin: 0 0 clamp(20px, 3vh, 34px);
+}
+
+.why-title {
   font-family: var(--font-stage), Georgia, serif;
   font-weight: 400;
-  font-size: clamp(23px, 2.7vw, 56px);
-  line-height: 1.42;
-  text-align: center;
-  max-width: 30ch;
-  margin: 0;
-  /* Not `balance`: balancing shortens every line to even them out, which
-     turned a four-line sentence into a narrow column and left a third of the
-     measure unused. `pretty` keeps the lines full and only guards the last
-     one against an orphan. */
+  font-size: clamp(30px, 4.4vw, 62px);
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  color: var(--stage-ink);
+  margin: 0 0 clamp(14px, 2vh, 22px);
+  max-width: 28ch;
   text-wrap: pretty;
 }
-.void-ask {
-  color: var(--stage-accent);
+
+.why-sub {
+  font-family: var(--font-stage), Georgia, serif;
   font-style: italic;
+  font-size: clamp(17px, 1.6vw, 24px);
+  line-height: 1.5;
+  color: color-mix(in srgb, var(--stage-ink) 62%, transparent);
+  margin: 0;
+  max-width: 56ch;
+  text-wrap: pretty;
+}
+
+/* Two readings of the same idea, side by side: the private one on the left,
+   what the site does with it on the right. They stack on a narrow screen. */
+.why-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(28px, 5vw, 76px);
+  align-items: start;
+  margin-top: clamp(44px, 7vh, 88px);
+}
+
+.why-col {
+  border-left: 1px solid color-mix(in srgb, var(--stage-accent) 45%, transparent);
+  padding-left: clamp(18px, 2.4vw, 34px);
+}
+.why-col p {
+  font-family: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(15px, 1.15vw, 17px);
+  line-height: 1.72;
+  color: color-mix(in srgb, var(--stage-ink) 58%, transparent);
+  margin: 0;
+}
+.why-strong {
+  margin-top: 22px !important;
+  font-weight: 600;
+  color: var(--stage-ink) !important;
+}
+
+.why-card {
+  border: 1px solid color-mix(in srgb, var(--stage-ink) 12%, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--stage-ink) 4%, transparent);
+  padding: clamp(24px, 3vw, 40px);
+}
+.why-card p {
+  font-family: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(15px, 1.15vw, 17px);
+  line-height: 1.72;
+  color: color-mix(in srgb, var(--stage-ink) 86%, transparent);
+  margin: 0;
+}
+.why-brand {
+  color: var(--stage-accent);
+  font-weight: 600;
+}
+.why-note {
+  margin-top: 20px !important;
+  font-family: var(--font-stage), Georgia, serif !important;
+  font-style: italic;
+  font-size: clamp(15px, 1.25vw, 19px) !important;
+  color: color-mix(in srgb, var(--stage-ink) 55%, transparent) !important;
+}
+
+.why-ask {
+  font-family: var(--font-stage), Georgia, serif;
+  font-style: italic;
+  font-size: clamp(22px, 2.9vw, 46px);
+  line-height: 1.34;
+  text-align: center;
+  color: var(--stage-accent);
+  margin: clamp(56px, 10vh, 130px) auto 0;
+  max-width: 34ch;
+  text-wrap: pretty;
+}
+
+@media (max-width: 760px) {
+  .why-cols {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (scripting: none) {

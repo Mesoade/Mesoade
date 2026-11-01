@@ -43,14 +43,52 @@ export default async function HomePage() {
         />
 
         {/* 1b. The black band --------------------------------------------
-            Where the hero's grid has finished fading out. Carries the
-            subheadline and nothing else. */}
+            Where the hero's grid has finished fading out. It used to carry one
+            sentence; people kept saying they could not tell what the site was
+            for, so it says so plainly here, before the wall asks for money. */}
         <section className="void">
-          <p className="void-copy">
-            A million people will each get to do this exactly once. Somewhere in
-            that million is your one square.{' '}
-            <span className="void-ask">What photo would that be?</span>
-          </p>
+          <div className="why">
+            <p className="why-eyebrow">Why this exists</p>
+            <h2 className="why-title">
+              One day, all we&apos;ll have left are the memories we made.
+            </h2>
+            <p className="why-sub">
+              The people we loved. The places we went. The little moments that
+              made life beautiful.
+            </p>
+
+            <div className="why-cols">
+              <div className="why-col">
+                <p>
+                  Maybe it&apos;s a picture of your parents when they were
+                  younger. Your wedding day. Your child&apos;s first smile. A
+                  friend you lost. A journey you&apos;re proud of. Or that one
+                  photo that makes you smile every time you see it.
+                </p>
+                <p className="why-strong">
+                  Every life is filled with moments worth holding on to.
+                </p>
+              </div>
+
+              <div className="why-card">
+                <p>
+                  <strong className="why-brand">{BRAND_NAME}</strong> is bringing
+                  together one million people to share one meaningful picture and
+                  the story that makes it special, creating a permanent wall of
+                  human memories.
+                </p>
+                <p className="why-note">
+                  A million squares. A million pieces of people&apos;s lives. And
+                  somewhere among them, yours.
+                </p>
+              </div>
+            </div>
+
+            <p className="why-ask">
+              If you could preserve just one moment for the world to see, what
+              would it be?
+            </p>
+          </div>
         </section>
 
         {/* 2. The wall ---------------------------------------------------
