@@ -75,11 +75,12 @@ export const DayCounter: React.FC = () => {
           style={{
             fontFamily: SANS,
             fontWeight: 600,
-            fontSize: 64,
+            fontSize: 50,
             letterSpacing: "0.4em",
             color: C.dim,
             opacity: p(0, 10),
-            marginBottom: -30,
+            marginTop: 50,
+            marginBottom: -24,
           }}
         >
           DAY
@@ -88,7 +89,7 @@ export const DayCounter: React.FC = () => {
           style={{
             fontFamily: SERIF,
             fontWeight: 700,
-            fontSize: 520,
+            fontSize: 330,
             lineHeight: 1,
             color: day === 6 ? C.orange : C.cream,
             scale: mix(landed, 1.08, 1),
@@ -98,14 +99,14 @@ export const DayCounter: React.FC = () => {
         >
           {day}
         </div>
-        <div style={{ display: "flex", gap: 18, marginTop: 30 }}>
+        <div style={{ display: "flex", gap: 16, marginTop: 14 }}>
           {[1, 2, 3, 4, 5, 6].map((d) => (
             <div
               key={d}
               style={{
-                width: 56,
-                height: 56,
-                borderRadius: 8,
+                width: 46,
+                height: 46,
+                borderRadius: 7,
                 backgroundColor: d <= day ? C.orange : "transparent",
                 border: `3px solid ${d <= day ? C.orange : C.line}`,
               }}
@@ -116,9 +117,9 @@ export const DayCounter: React.FC = () => {
           style={{
             fontFamily: SERIF,
             fontStyle: "italic",
-            fontSize: 56,
+            fontSize: 50,
             color: C.cream,
-            marginTop: 50,
+            marginTop: 34,
             opacity: p(14, 26),
           }}
         >
@@ -136,11 +137,11 @@ export const SiteScreenshot: React.FC = () => {
   const IMG_W = 1189;
   const IMG_H = 2000;
   const zoom = p(22, 46, EASE_IN_OUT);
-  const s = mix(zoom, 0.54, 1.55);
+  const s = mix(zoom, 0.33, 1.25);
   const fx = mix(zoom, IMG_W / 2, 330);
   const fy = mix(zoom, IMG_H / 2, 1440);
   const SX = 540;
-  const SY = 640;
+  const SY = 390;
   const ring = p(44, 54);
 
   return (
@@ -180,12 +181,12 @@ export const SiteScreenshot: React.FC = () => {
       <div
         style={{
           position: "absolute",
-          top: 1000,
+          top: 640,
           left: 0,
           right: 0,
           textAlign: "center",
           fontFamily: SERIF,
-          fontSize: 84,
+          fontSize: 80,
           color: C.cream,
           opacity: p(50, 60),
           translate: `0px ${mix(p(50, 60), 30, 0)}px`,
@@ -204,11 +205,11 @@ export const MillionMath: React.FC = () => {
   const frame = useCurrentFrame();
   const p = useProgress();
   const COLS = 30;
-  const ROWS = 20;
+  const ROWS = 11;
   const CELL = 26;
   const GAP = 6;
   const gridW = COLS * CELL + (COLS - 1) * GAP;
-  const lit = [47, 132, 251, 318, 407, 529];
+  const lit = [47, 98, 161, 214, 263, 301];
   const POP0 = 34;
   const statIn = p(64, 80);
 
@@ -218,13 +219,13 @@ export const MillionMath: React.FC = () => {
         <Sfx key={i} at={POP0 + i * 3} name="pop" volume={0.18} />
       ))}
       <Sfx at={64} name="ding" />
-      <Title top={175} p={p(0, 14)} size={88}>
+      <Title top={100} p={p(0, 14)} size={80}>
         1,000,000 squares
       </Title>
       <div
         style={{
           position: "absolute",
-          top: 330,
+          top: 240,
           left: (1080 - gridW) / 2,
           width: gridW,
           display: "flex",
@@ -258,12 +259,12 @@ export const MillionMath: React.FC = () => {
       <div
         style={{
           position: "absolute",
-          top: 1010,
+          top: 610,
           left: 0,
           right: 0,
           textAlign: "center",
           fontFamily: SANS,
-          fontSize: 30,
+          fontSize: 28,
           color: C.dim,
           opacity: p(20, 30) * (1 - statIn),
         }}
@@ -276,7 +277,7 @@ export const MillionMath: React.FC = () => {
           justifyContent: "center",
           opacity: statIn,
           scale: mix(statIn, 0.9, 1),
-          paddingTop: 60,
+          paddingTop: 40,
         }}
       >
         <div style={{ display: "flex", alignItems: "baseline", gap: 26 }}>
@@ -284,27 +285,27 @@ export const MillionMath: React.FC = () => {
             style={{
               fontFamily: SERIF,
               fontWeight: 700,
-              fontSize: 330,
+              fontSize: 240,
               color: C.orange,
               lineHeight: 1,
             }}
           >
             6
           </span>
-          <span style={{ fontFamily: SERIF, fontSize: 84, color: C.cream }}>
+          <span style={{ fontFamily: SERIF, fontSize: 76, color: C.cream }}>
             / 1,000,000
           </span>
         </div>
         <div
           style={{
-            marginTop: 30,
-            padding: "18px 44px",
+            marginTop: 16,
+            padding: "14px 40px",
             borderRadius: 999,
             backgroundColor: C.orangeSoft,
             border: `3px solid ${C.orange}`,
             fontFamily: SANS,
             fontWeight: 600,
-            fontSize: 56,
+            fontSize: 50,
             color: C.cream,
             opacity: p(88, 98),
             scale: mix(p(88, 98), 0.85, 1),
@@ -314,10 +315,10 @@ export const MillionMath: React.FC = () => {
         </div>
         <div
           style={{
-            marginTop: 44,
+            marginTop: 28,
             fontFamily: SERIF,
             fontStyle: "italic",
-            fontSize: 54,
+            fontSize: 48,
             color: C.dim,
             opacity: p(106, 118),
           }}
@@ -334,22 +335,22 @@ export const MillionMath: React.FC = () => {
 export const ThirtyDays: React.FC = () => {
   const frame = useCurrentFrame();
   const p = useProgress();
-  const CELL = 128;
-  const GAP = 16;
-  const W = 6 * CELL + 5 * GAP;
+  const CELL = 84;
+  const GAP = 12;
+  const W = 10 * CELL + 9 * GAP;
 
   return (
     <Panel label="The promise">
       {[0, 1, 2, 3, 4, 5].map((i) => (
         <Sfx key={i} at={20 + i * 3} name="tick" />
       ))}
-      <Title top={175} p={p(0, 14)} size={88}>
+      <Title top={100} p={p(0, 14)} size={80}>
         <Em>30</Em> days. <Em>30</Em> videos.
       </Title>
       <div
         style={{
           position: "absolute",
-          top: 345,
+          top: 290,
           left: (1080 - W) / 2,
           width: W,
           display: "flex",
@@ -370,7 +371,7 @@ export const ThirtyDays: React.FC = () => {
               style={{
                 width: CELL,
                 height: CELL,
-                borderRadius: 16,
+                borderRadius: 12,
                 border: `3px solid ${done > 0 ? C.orange : C.line}`,
                 backgroundColor: done > 0 ? C.orange : "transparent",
                 display: "flex",
@@ -378,12 +379,12 @@ export const ThirtyDays: React.FC = () => {
                 justifyContent: "center",
                 fontFamily: SANS,
                 fontWeight: 600,
-                fontSize: 44,
+                fontSize: 32,
                 color: done > 0 ? C.bg : C.dim,
                 opacity: appear,
                 scale: mix(appear, 0.7, 1) * (done > 0 ? mix(done, 1.15, 1) : 1),
                 outline: day === 6 ? `4px solid ${C.cream}` : undefined,
-                outlineOffset: 6,
+                outlineOffset: 5,
               }}
             >
               {done > 0.5 ? "✓" : day}
@@ -401,14 +402,14 @@ export const Virality: React.FC = () => {
   const frame = useCurrentFrame();
   const p = useProgress();
   const CX = 540;
-  const CY = 680;
+  const CY = 490;
   const ring1 = new Array(6).fill(0).map((_, i) => {
     const a = (i / 6) * Math.PI * 2 - Math.PI / 2;
-    return { x: CX + Math.cos(a) * 210, y: CY + Math.sin(a) * 210, a };
+    return { x: CX + Math.cos(a) * 150, y: CY + Math.sin(a) * 150, a };
   });
   const ring2 = new Array(14).fill(0).map((_, i) => {
     const a = (i / 14) * Math.PI * 2 - Math.PI / 2 + 0.2;
-    return { x: CX + Math.cos(a) * 390, y: CY + Math.sin(a) * 360, a };
+    return { x: CX + Math.cos(a) * 340, y: CY + Math.sin(a) * 235, a };
   });
   const stamp = p(117, 127);
   const spin = interpolate(frame, [0, 180], [0, 8]);
@@ -439,11 +440,11 @@ export const Virality: React.FC = () => {
         <Sfx key={`b${i}`} at={58 + i * 6} name="pop" volume={0.13} />
       ))}
       <Sfx at={117} name="thud" />
-      <Title top={175} p={p(0, 14)} size={84}>
+      <Title top={100} p={p(0, 14)} size={80}>
         Relies on <Em>virality</Em>
       </Title>
       <AbsoluteFill style={{ rotate: `${spin}deg`, opacity: mix(stamp, 1, 0.35) }}>
-        <svg width={1080} height={1250} style={{ position: "absolute" }}>
+        <svg width={1080} height={830} style={{ position: "absolute" }}>
           {ring1.map((n, i) => {
             const pr = p(24 + i * 3, 36 + i * 3);
             return (
@@ -474,16 +475,16 @@ export const Virality: React.FC = () => {
             );
           })}
         </svg>
-        {node(CX, CY, 96, p(4, 16), "c", true)}
-        {ring1.map((n, i) => node(n.x, n.y, 62, p(32 + i * 3, 42 + i * 3), `r1${i}`, false))}
-        {ring2.map((n, i) => node(n.x, n.y, 40, p(62 + i * 2, 72 + i * 2), `r2${i}`, i % 3 === 0))}
+        {node(CX, CY, 76, p(4, 16), "c", true)}
+        {ring1.map((n, i) => node(n.x, n.y, 46, p(32 + i * 3, 42 + i * 3), `r1${i}`, false))}
+        {ring2.map((n, i) => node(n.x, n.y, 30, p(62 + i * 2, 72 + i * 2), `r2${i}`, i % 3 === 0))}
       </AbsoluteFill>
-      <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", paddingTop: 120 }}>
+      <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", paddingTop: 110 }}>
         <div
           style={{
             border: `10px solid ${C.orange}`,
             borderRadius: 24,
-            padding: "26px 56px",
+            padding: "18px 44px",
             backgroundColor: "rgba(19,17,15,0.85)",
             rotate: "-8deg",
             opacity: stamp,
@@ -495,7 +496,7 @@ export const Virality: React.FC = () => {
             style={{
               fontFamily: SERIF,
               fontWeight: 700,
-              fontSize: 200,
+              fontSize: 150,
               lineHeight: 1,
               color: C.orange,
             }}
@@ -506,7 +507,7 @@ export const Virality: React.FC = () => {
             style={{
               fontFamily: SANS,
               fontWeight: 700,
-              fontSize: 60,
+              fontSize: 48,
               letterSpacing: "0.2em",
               color: C.cream,
               marginTop: 8,
@@ -526,9 +527,9 @@ export const OneGoesViral: React.FC = () => {
   const frame = useCurrentFrame();
   const p = useProgress();
   const N = 5;
-  const CW = 160;
-  const CH = 284;
-  const GAP = 26;
+  const CW = 130;
+  const CH = 230;
+  const GAP = 24;
   const rowW = N * CW + (N - 1) * GAP;
   const lift = p(46, 66);
 
@@ -539,10 +540,10 @@ export const OneGoesViral: React.FC = () => {
       ))}
       <Sfx at={44} name="riser" />
       <Sfx at={64} name="pop" />
-      <Title top={175} p={p(46, 60)} size={88}>
+      <Title top={100} p={p(46, 60)} size={80}>
         <Em>One</Em> goes viral.
       </Title>
-      <svg width={1080} height={1250} style={{ position: "absolute" }}>
+      <svg width={1080} height={830} style={{ position: "absolute" }}>
         <polyline
           points={(() => {
             const pts: string[] = [];
@@ -551,7 +552,7 @@ export const OneGoesViral: React.FC = () => {
             for (let i = 0; i <= 40; i++) {
               const t = i / 40;
               const x = mix(t, x0, x1);
-              const y = 1110 - (t < 0.6 ? t * 40 : 24 + Math.pow((t - 0.6) / 0.4, 2.6) * 760);
+              const y = 770 - (t < 0.6 ? t * 30 : 18 + Math.pow((t - 0.6) / 0.4, 2.6) * 520);
               pts.push(`${x},${y}`);
             }
             return pts.slice(0, Math.max(1, Math.round(41 * p(50, 80, EASE_IN_OUT)))).join(" ");
@@ -568,7 +569,7 @@ export const OneGoesViral: React.FC = () => {
         const isViral = i === 2;
         const appear = p(2 + i * 4, 12 + i * 4);
         const x = (1080 - rowW) / 2 + i * (CW + GAP);
-        const y = 640;
+        const y = 450;
         const l = isViral ? lift : 0;
         return (
           <div
@@ -583,25 +584,25 @@ export const OneGoesViral: React.FC = () => {
               backgroundColor: isViral && l > 0 ? C.orange : C.bgRaised,
               border: `3px solid ${isViral && l > 0 ? C.orange : C.line}`,
               opacity: appear * (isViral ? 1 : mix(lift, 1, 0.45)),
-              translate: `0px ${mix(appear, 60, 0) - l * 260}px`,
-              scale: mix(l, 1, 1.45),
+              translate: `0px ${mix(appear, 60, 0) - l * 150}px`,
+              scale: mix(l, 1, 1.35),
               zIndex: isViral ? 2 : 1,
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              gap: 18,
+              gap: 14,
               boxShadow: isViral ? `0 0 ${l * 60}px rgba(232,105,47,0.7)` : undefined,
             }}
           >
-            <svg width={56} height={56} viewBox="0 0 56 56">
+            <svg width={46} height={46} viewBox="0 0 56 56">
               <polygon points="18,12 46,28 18,44" fill={isViral && l > 0 ? C.bg : C.cream} />
             </svg>
             <div
               style={{
                 fontFamily: SANS,
                 fontWeight: 600,
-                fontSize: 24,
+                fontSize: 20,
                 color: isViral && l > 0 ? C.bg : C.dim,
               }}
             >
@@ -622,13 +623,13 @@ export const ComfortZone: React.FC = () => {
   const p = useProgress();
   const out = p(18, 46, EASE_IN_OUT);
   const CX = 540;
-  const CY = 700;
-  const R = 300;
+  const CY = 500;
+  const R = 240;
 
   return (
     <Panel label="Also" noEnter>
       <Sfx at={18} name="whoosh" volume={0.22} />
-      <Title top={175} p={p(0, 14)} size={84}>
+      <Title top={100} p={p(0, 14)} size={80}>
         Beyond my <Em>comfort zone</Em>
       </Title>
       <div
@@ -645,10 +646,10 @@ export const ComfortZone: React.FC = () => {
           display: "flex",
           alignItems: "flex-end",
           justifyContent: "center",
-          paddingBottom: 90,
+          paddingBottom: 60,
           fontFamily: SERIF,
           fontStyle: "italic",
-          fontSize: 50,
+          fontSize: 42,
           color: C.dim,
         }}
       >
@@ -657,11 +658,11 @@ export const ComfortZone: React.FC = () => {
       <div
         style={{
           position: "absolute",
-          left: mix(out, CX, 860) - 45,
-          top: mix(out, CY - 40, 420) - 45,
-          width: 90,
-          height: 90,
-          borderRadius: 14,
+          left: mix(out, CX, 880) - 38,
+          top: mix(out, CY - 30, 300) - 38,
+          width: 76,
+          height: 76,
+          borderRadius: 12,
           backgroundColor: C.orange,
           boxShadow: `0 0 ${mix(out, 0, 50)}px ${C.orange}`,
           rotate: `${mix(out, 0, 20)}deg`,
@@ -677,36 +678,36 @@ export const ComfortZone: React.FC = () => {
 export const FavoritePhoto: React.FC = () => {
   const frame = useCurrentFrame();
   const p = useProgress();
-  const COLS = 5;
-  const ROWS = 4;
-  const T = 164;
-  const G = 12;
+  const COLS = 7;
+  const ROWS = 3;
+  const T = 124;
+  const G = 10;
   const W = COLS * T + (COLS - 1) * G;
   const X0 = (1080 - W) / 2;
-  const Y0 = 420;
+  const Y0 = 270;
   const filled: Record<number, (typeof PHOTOS)[number]> = {
-    3: "pets",
-    9: "tulips",
-    12: "balloon",
-    17: "kids",
-    5: "hands",
+    2: "pets",
+    6: "tulips",
+    11: "balloon",
+    15: "kids",
+    19: "hands",
   };
-  const TARGET = 7;
+  const TARGET = 9;
   const tx = X0 + (TARGET % COLS) * (T + G);
   const ty = Y0 + Math.floor(TARGET / COLS) * (T + G);
   const fly = p(36, 64, EASE_OUT);
   const settle = p(72, 92, EASE_IN_OUT);
-  const BIG = 420;
+  const BIG = 320;
   const size = mix(settle, BIG, T);
   const cx = mix(settle, mix(fly, 1300, 540), tx + T / 2);
-  const cy = mix(settle, mix(fly, 760, 760), ty + T / 2);
+  const cy = mix(settle, 470, ty + T / 2);
   const flash = interpolate(frame, [92, 100, 116], [0, 1, 0], clamp);
 
   return (
     <Panel label="The ask">
       <Sfx at={36} name="whoosh" volume={0.2} />
       <Sfx at={92} name="pop" volume={0.32} />
-      <Title top={175} p={p(0, 14)} size={84}>
+      <Title top={100} p={p(0, 14)} size={80}>
         Your <Em>favorite</Em> photo.
       </Title>
       {new Array(COLS * ROWS).fill(0).map((_, i) => {
@@ -764,8 +765,8 @@ export const World: React.FC = () => {
   const frame = useCurrentFrame();
   const p = useProgress();
   const CX = 540;
-  const CY = 700;
-  const R = 360;
+  const CY = 505;
+  const R = 275;
   const rot = frame * 0.02;
   const pins = [
     { lat: 0.5, lon: 0.3 },
@@ -783,10 +784,10 @@ export const World: React.FC = () => {
       {[0, 1, 2, 3, 4].map((i) => (
         <Sfx key={i} at={18 + i * 8} name="pop" volume={0.14} />
       ))}
-      <Title top={175} p={p(0, 14)} size={84}>
+      <Title top={100} p={p(0, 14)} size={80}>
         Anyone. <Em>Anywhere.</Em>
       </Title>
-      <svg width={1080} height={1250} style={{ position: "absolute", opacity: p(0, 14) }}>
+      <svg width={1080} height={830} style={{ position: "absolute", opacity: p(0, 14) }}>
         <defs>
           <radialGradient id="globe" cx="40%" cy="35%" r="70%">
             <stop offset="0%" stopColor="#2c241e" />
@@ -830,34 +831,34 @@ export const World: React.FC = () => {
 
 export const ClickStory: React.FC = () => {
   const p = useProgress();
-  const T = 250;
+  const T = 200;
   const G = 14;
-  const W = 3 * T + 2 * G;
+  const W = 4 * T + 3 * G;
   const X0 = (1080 - W) / 2;
-  const Y0 = 330;
-  const tiles: ((typeof PHOTOS)[number] | null)[] = ["pets", "tulips", "girl", "kids", "hands", null, "balloon", null, "girl"];
-  const TARGET = 4;
-  const tCx = X0 + (TARGET % 3) * (T + G) + T / 2;
-  const tCy = Y0 + Math.floor(TARGET / 3) * (T + G) + T / 2;
+  const Y0 = 250;
+  const tiles: ((typeof PHOTOS)[number] | null)[] = ["pets", "tulips", "girl", null, "kids", "hands", null, "balloon"];
+  const TARGET = 5;
+  const tCx = X0 + (TARGET % 4) * (T + G) + T / 2;
+  const tCy = Y0 + Math.floor(TARGET / 4) * (T + G) + T / 2;
   const move = p(14, 50, EASE_IN_OUT);
   const curX = mix(move, 960, tCx + 20);
-  const curY = mix(move, 1180, tCy + 30);
+  const curY = mix(move, 780, tCy + 30);
   const press = interpolate(useCurrentFrame(), [54, 58, 64], [1, 0.92, 1], clamp);
   const open = p(62, 82, EASE_IN_OUT);
 
   // story card geometry: from tile → big card
   const cardW = mix(open, T, 860);
-  const cardH = mix(open, T, 940);
+  const cardH = mix(open, T, 600);
   const cardX = mix(open, tCx - T / 2, 110);
-  const cardY = mix(open, tCy - T / 2, 210);
+  const cardY = mix(open, tCy - T / 2, 190);
 
   return (
     <Panel label="Every square has a story">
       <Sfx at={56} name="click" />
       <Sfx at={62} name="whoosh" volume={0.2} />
       {tiles.map((t, i) => {
-        const x = X0 + (i % 3) * (T + G);
-        const y = Y0 + Math.floor(i / 3) * (T + G);
+        const x = X0 + (i % 4) * (T + G);
+        const y = Y0 + Math.floor(i / 4) * (T + G);
         return (
           <div
             key={i}
@@ -896,9 +897,9 @@ export const ClickStory: React.FC = () => {
         >
           <Img
             src={photo("hands")}
-            style={{ width: "100%", height: mix(open, T, 520), objectFit: "cover" }}
+            style={{ width: "100%", height: mix(open, T, 330), objectFit: "cover" }}
           />
-          <div style={{ padding: "36px 48px", opacity: p(78, 90) }}>
+          <div style={{ padding: "28px 44px", opacity: p(78, 90) }}>
             <div
               style={{
                 fontFamily: SANS,
@@ -910,13 +911,13 @@ export const ClickStory: React.FC = () => {
             >
               THE STORY
             </div>
-            {[0.92, 0.85, 0.95, 0.6].map((w, i) => (
+            {[0.92, 0.85, 0.6].map((w, i) => (
               <div
                 key={i}
                 style={{
-                  marginTop: i === 0 ? 26 : 20,
-                  height: 26,
-                  borderRadius: 13,
+                  marginTop: i === 0 ? 22 : 16,
+                  height: 22,
+                  borderRadius: 11,
                   backgroundColor: C.line,
                   width: `${w * 100 * p(82 + i * 4, 94 + i * 4)}%`,
                 }}
@@ -954,7 +955,7 @@ export const EndCard: React.FC = () => {
   return (
     <Panel noExit>
       <Sfx at={74} name="ding" />
-      <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", paddingBottom: 30 }}>
+      <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", paddingTop: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 24, opacity: p(4, 16) }}>
           <svg width={52} height={52} viewBox="0 0 52 52">
             <rect x={0} y={0} width={22} height={22} fill={C.orange} />
@@ -976,9 +977,9 @@ export const EndCard: React.FC = () => {
         </div>
         <div
           style={{
-            marginTop: 70,
+            marginTop: 44,
             fontFamily: SERIF,
-            fontSize: 120,
+            fontSize: 104,
             lineHeight: 1.05,
             color: C.cream,
             textAlign: "center",
@@ -986,19 +987,17 @@ export const EndCard: React.FC = () => {
             translate: `0px ${mix(p(10, 24), 40, 0)}px`,
           }}
         >
-          Tell your
-          <br />
-          <Em>story.</Em>
+          Tell your <Em>story.</Em>
         </div>
         <div
           style={{
-            marginTop: 70,
-            padding: "34px 70px",
+            marginTop: 50,
+            padding: "28px 64px",
             borderRadius: 999,
             backgroundColor: C.orange,
             fontFamily: SANS,
             fontWeight: 600,
-            fontSize: 52,
+            fontSize: 48,
             color: C.cream,
             opacity: p(24, 36),
             scale: mix(p(24, 36), 0.85, 1) * pulse,
@@ -1009,12 +1008,12 @@ export const EndCard: React.FC = () => {
         </div>
         <div
           style={{
-            marginTop: 50,
+            marginTop: 38,
             display: "flex",
             alignItems: "center",
             gap: 20,
             fontFamily: SANS,
-            fontSize: 38,
+            fontSize: 34,
             letterSpacing: "0.08em",
             color: C.dim,
             opacity: p(36, 48),

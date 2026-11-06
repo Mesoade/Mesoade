@@ -52,13 +52,13 @@ export const Panel: React.FC<{
         <div
           style={{
             position: "absolute",
-            top: 110,
+            top: 58,
             left: 0,
             right: 0,
             textAlign: "center",
             fontFamily: "Inter",
             fontWeight: 500,
-            fontSize: 30,
+            fontSize: 28,
             letterSpacing: "0.32em",
             color: C.dim,
             textTransform: "uppercase",

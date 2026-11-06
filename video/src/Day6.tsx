@@ -36,7 +36,7 @@ export const Day6: React.FC = () => {
       {/* A-roll: original talking-head clip with its burned-in captions and voice */}
       <Video name="A-roll" src={staticFile("day6.mp4")} />
 
-      {/* B-roll cutaways (panel sits above the caption line) */}
+      {/* B-roll cutaways (panel sits above the speaker's head) */}
       <Sequence name="B: Day 6 counter" from={9} durationInFrames={63}>
         <DayCounter />
       </Sequence>

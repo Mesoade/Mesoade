@@ -15,8 +15,9 @@ export const C = {
 export const SERIF = "Playfair Display";
 export const SANS = "Inter";
 
-// Burned-in captions start at ~y=1300. B-roll stays above this line.
-export const PANEL_H = 1250;
+// Speaker's head starts at ~y=870 (captions at ~y=1300). B-roll stays above
+// the head so the face and captions both remain visible.
+export const PANEL_H = 830;
 
 export const EASE_OUT = Easing.bezier(0.16, 1, 0.3, 1);
 export const EASE_IN_OUT = Easing.bezier(0.65, 0, 0.35, 1);
