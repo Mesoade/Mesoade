@@ -23,7 +23,7 @@ export default function Footer() {
           <a href="/contact">Contact &amp; report abuse</a>
         </div>
         <p style={{ margin: 0, lineHeight: 1.6 }}>
-          {BRAND_NAME} — 1,000,000 squares, $10 each, one per person. No refunds.
+          {BRAND_NAME}. 1,000,000 squares, $10 each, one per person. No refunds.
           Content is permanent once uploaded.
         </p>
       </div>

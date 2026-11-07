@@ -42,7 +42,7 @@ export async function createCheckoutSession(args: {
       },
     ],
     payment_intent_data: {
-      description: `${BRAND_NAME} — one permanent square`,
+      description: `${BRAND_NAME}: one permanent square`,
     },
     // Surfaced again at checkout so nobody reaches the card field without
     // having seen the terms they are agreeing to.

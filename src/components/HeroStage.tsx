@@ -475,7 +475,7 @@ export default function HeroStage({
           <a href="#wall">The wall</a>
         </nav>
         <a className="stage-nav-cta" href="/claim">
-          Claim — {priceDisplay}
+          Claim for {priceDisplay}
         </a>
       </header>
 
@@ -518,7 +518,7 @@ export default function HeroStage({
 
         <div className="stage-actions" data-on={typingDone}>
           <a className="stage-cta" href="/claim">
-            Claim your square — {priceDisplay}
+            Claim your square for {priceDisplay}
           </a>
           <a className="stage-quiet" href="#how">
             How it works <span aria-hidden="true">↓</span>

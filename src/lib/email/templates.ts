@@ -33,11 +33,11 @@ export function claimConfirmation(ctx: SquareEmailContext): OutgoingEmail {
   const url = uploadUrl(ctx)
   return {
     to: ctx.to,
-    subject: `Square ${label} is yours — now choose your photo`,
+    subject: `Square ${label} is yours. Now choose your photo`,
     html: shell(
       `<h1 style="font-size:22px;margin:0 0 12px">Square ${label} is permanently yours.</h1>
-<p style="line-height:1.6;color:#b8b8c0">It is yours from this moment on, and it will never be resold or reassigned — whatever you do next.</p>
-<p style="line-height:1.6;color:#b8b8c0">You have <strong style="color:#e8e8ea">${UPLOAD_WINDOW_DAYS} days</strong> to upload your one photo. Once you upload it, it is locked forever — there is no edit, no replace, no undo. Choose wisely.</p>
+<p style="line-height:1.6;color:#b8b8c0">It is yours from this moment on, and it will never be resold or reassigned, whatever you do next.</p>
+<p style="line-height:1.6;color:#b8b8c0">You have <strong style="color:#e8e8ea">${UPLOAD_WINDOW_DAYS} days</strong> to upload your one photo. Once you upload it, it is locked forever. There is no edit, no replace, no undo. Choose wisely.</p>
 ${button(url, 'Upload your photo')}
 <p style="font-size:13px;color:#8a8a94;line-height:1.6">Keep this link. There are no accounts here, so this email is how you get back to the upload screen.</p>
 <p style="font-size:13px;color:#8a8a94;line-height:1.6">Your permanent square page: <a href="${squareUrl(ctx.squareIndex)}" style="color:#b8b8c0">${squareUrl(ctx.squareIndex)}</a></p>`,
@@ -61,12 +61,12 @@ export function uploadReminder(ctx: SquareEmailContext, daysLeft: number): Outgo
   const url = uploadUrl(ctx)
   return {
     to: ctx.to,
-    subject: `Square ${label} is still blank — ${daysLeft} days left to upload`,
+    subject: `Square ${label} is still blank: ${daysLeft} days left to upload`,
     html: shell(
       `<h1 style="font-size:22px;margin:0 0 12px">Your square is still waiting.</h1>
 <p style="line-height:1.6;color:#b8b8c0">Square ${label} is yours permanently, but nothing has been uploaded to it yet. You have <strong style="color:#e8e8ea">${daysLeft} days</strong> left in your upload window.</p>
 ${button(url, 'Upload your photo')}
-<p style="font-size:13px;color:#8a8a94;line-height:1.6">If the window closes, you still keep square ${label} forever — it simply stays blank. Take the time to pick the right photo; you only get one.</p>`,
+<p style="font-size:13px;color:#8a8a94;line-height:1.6">If the window closes, you still keep square ${label} forever. It simply stays blank. Take the time to pick the right photo; you only get one.</p>`,
     ),
     text: `Your square is still waiting.
 

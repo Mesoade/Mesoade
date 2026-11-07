@@ -110,5 +110,5 @@ export const DENIAL_MESSAGES: Record<AccessDenial, string> = {
   removed:
     'The content on this square was removed under the content policy. The square remains permanently yours, but it cannot be uploaded to again.',
   window_closed:
-    'The 7-day upload window for this square has closed. The square is still permanently yours — it simply stays blank.',
+    'The 7-day upload window for this square has closed. The square is still permanently yours. It simply stays blank.',
 }

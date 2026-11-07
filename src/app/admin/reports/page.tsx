@@ -43,7 +43,7 @@ export default async function ReportsPage() {
       </a>
       <h1 style={{ fontSize: 22, margin: '20px 0 6px' }}>Open reports</h1>
       <p className="hint" style={{ margin: '0 0 26px' }}>
-        Oldest first — these are the ones that have been live and unreviewed the
+        Oldest first: these are the ones that have been live and unreviewed the
         longest.
       </p>
 

@@ -2,6 +2,13 @@ import type { NextConfig } from 'next'
 
 const config: NextConfig = {
   reactStrictMode: true,
+  // The link-preview cards draw text with the site's own fonts, which Satori
+  // reads off disk. Without this the .ttf files are left out of the deployed
+  // functions and the cards fail at request time.
+  outputFileTracingIncludes: {
+    '/opengraph-image': ['./src/app/_og/*.ttf'],
+    '/s/[index]/opengraph-image': ['./src/app/_og/*.ttf'],
+  },
   // Uploaded images are served from object storage. Restrict remote patterns to
   // the configured public base so we never proxy arbitrary hosts.
   //

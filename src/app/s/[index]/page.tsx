@@ -29,21 +29,60 @@ export async function generateMetadata({
   if (!Number.isInteger(squareIndex)) return { title: 'Square not found' }
 
   const label = formatSquareLabel(squareIndex)
+  const total = TOTAL_SQUARES.toLocaleString('en-US')
   const square = await getSquare(squareIndex)
-  const description = square?.caption?.trim()
-    ? square.caption
-    : `Square ${label} of ${TOTAL_SQUARES.toLocaleString('en-US')} on ${BRAND_NAME}.`
+
+  // The owner's story is what makes a shared link worth opening, so it is the
+  // description wherever there is one. Trimmed on a word boundary, because a
+  // sentence cut mid-word reads as a bug in the preview.
+  const description = summarise(square?.caption) ?? NO_STORY_DESCRIPTION
+  const title = `Square ${label} of ${total}`
+  const path = `/s/${squareIndex}`
 
   return {
     title: `Square ${label}`,
     description,
+    alternates: { canonical: path },
     openGraph: {
-      title: `Square ${label} of 1,000,000`,
+      // Spelled out rather than left to the title template, so the card reads
+      // the same wherever it is unfurled.
+      title: `${title} | ${BRAND_NAME}`,
       description,
-      images: [{ url: `/s/${squareIndex}/opengraph-image`, width: 1200, height: 1200 }],
+      // Relative: Next resolves it against metadataBase, which is built from
+      // NEXT_PUBLIC_SITE_URL.
+      url: path,
+      type: 'article',
+      images: [
+        {
+          url: `${path}/opengraph-image`,
+          width: 1200,
+          height: 630,
+          alt: `Square ${label} on ${BRAND_NAME}`,
+        },
+      ],
     },
-    twitter: { card: 'summary_large_image' },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${title} | ${BRAND_NAME}`,
+      description,
+    },
   }
+}
+
+/** What a square with no story says instead. */
+const NO_STORY_DESCRIPTION =
+  'One million squares. $10 each. One per person, forever. Which photo would you choose?'
+
+const DESCRIPTION_LIMIT = 150
+
+/** First ~150 characters of a story, cut at a word rather than mid-word. */
+function summarise(caption: string | null | undefined): string | null {
+  const text = caption?.trim().replace(/\s+/g, ' ')
+  if (!text) return null
+  if (text.length <= DESCRIPTION_LIMIT) return text
+  const cut = text.slice(0, DESCRIPTION_LIMIT)
+  const lastSpace = cut.lastIndexOf(' ')
+  return `${(lastSpace > 60 ? cut.slice(0, lastSpace) : cut).replace(/[,;:.\s]+$/, '')}…`
 }
 
 export default async function SquarePage({
@@ -72,12 +111,12 @@ export default async function SquarePage({
           </h1>
           <p style={{ color: 'var(--text-dim)', lineHeight: 1.7 }}>
             Squares are assigned automatically from the centre outward, so this
-            one isn&apos;t something you can pick — but the next one out is
+            one isn&apos;t something you can pick, but the next one out is
             available right now.
           </p>
           <p style={{ marginTop: 26 }}>
             <a className="btn" href="/claim">
-              Claim your square — $10
+              Claim your square for $10
             </a>
           </p>
         </main>
@@ -179,7 +218,12 @@ export default async function SquarePage({
         )}
 
         <div style={{ marginTop: 34, paddingTop: 26, borderTop: '1px solid var(--border)' }}>
-          <ShareLinks url={url} label={`Square ${label}`} />
+          <ShareLinks
+            url={url}
+            label={label}
+            brand={BRAND_NAME}
+            total={TOTAL_SQUARES.toLocaleString('en-US')}
+          />
         </div>
 
         <div style={{ marginTop: 26 }}>
@@ -191,7 +235,7 @@ export default async function SquarePage({
             One million squares. $10 each. One per person, ever.
           </p>
           <a className="btn" href="/claim">
-            Claim yours — $10
+            Claim yours for $10
           </a>
         </div>
       </main>

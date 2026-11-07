@@ -266,7 +266,7 @@ export async function deleteSquare(form: FormData): Promise<void> {
   revalidatePath(`/s/${squareIndex}`)
   finish({
     notice: orphaned
-      ? `Square ${squareIndex} deleted and its number released. The stored image could not be removed — delete it from the bucket by hand.`
+      ? `Square ${squareIndex} deleted and its number released. The stored image could not be removed. Delete it from the bucket by hand.`
       : `Square ${squareIndex} deleted. Its number is back in the pool and will go to the next claim.`,
   })
 }

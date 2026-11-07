@@ -68,14 +68,16 @@ const mono = DM_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(env.siteUrl),
   title: {
-    default: `${BRAND_NAME} — ${BRAND_TAGLINE}`,
-    template: `%s — ${BRAND_NAME}`,
+    default: `${BRAND_NAME} | ${BRAND_TAGLINE}`,
+    template: `%s | ${BRAND_NAME}`,
   },
   description:
     'One million squares. $10 each. One per person, ever. Upload one photo and it is locked forever.',
   openGraph: {
     siteName: BRAND_NAME,
     type: 'website',
+    // Relative: resolved against metadataBase, which is NEXT_PUBLIC_SITE_URL.
+    url: '/',
   },
   twitter: { card: 'summary_large_image' },
 }

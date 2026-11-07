@@ -24,7 +24,7 @@ export default function ReportButton({ squareIndex }: { squareIndex: number }) {
   if (done) {
     return (
       <p className="hint" style={{ margin: 0 }}>
-        Thanks — a moderator will review this square.
+        Thanks. A moderator will review this square.
       </p>
     )
   }

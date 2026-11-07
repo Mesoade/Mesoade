@@ -162,7 +162,7 @@ export default async function AdminPage({
           </h2>
           <p style={{ margin: '0 0 12px', fontSize: 14, color: 'var(--text-dim)' }}>
             Upload link below. It is also in the confirmation email, but copy it
-            now — this is the only time it is shown in plain text, and it is the
+            now. This is the only time it is shown in plain text, and it is the
             only way onto the upload screen.
           </p>
           <code
@@ -217,7 +217,7 @@ export default async function AdminPage({
       <h2 style={{ fontSize: 17, margin: '0 0 6px' }}>Recently claimed</h2>
       <p className="hint" style={{ margin: '0 0 20px' }}>
         Newest first. Removing content leaves the square permanently owned by its
-        buyer — it simply shows the neutral tile, exactly like a square that was
+        buyer. It simply shows the neutral tile, exactly like a square that was
         never filled in. There is no refund and it is never resold.
       </p>
 

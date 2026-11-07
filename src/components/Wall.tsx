@@ -522,7 +522,7 @@ export default function Wall({ storageBaseUrl, activeRing, initialCells }: WallP
           >
             <strong className="num">{formatSquareLabel(hovered.i)}</strong>
             <span style={{ color: 'var(--vault-dim)' }}>
-              {' — '}
+              {' · '}
               {hovered.s === 1 ? 'claimed & filled' : 'claimed, blank'}
             </span>
           </div>

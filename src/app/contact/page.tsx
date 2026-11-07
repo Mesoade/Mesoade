@@ -10,14 +10,14 @@ export default function ContactPage() {
       <h2>Report a square</h2>
       <p>
         The fastest route is the &quot;Report this square&quot; button on the
-        square&apos;s own page — it goes straight to the moderation queue and
+        square&apos;s own page. It goes straight to the moderation queue and
         needs no account. Otherwise, write to{' '}
         <a href={`mailto:${LEGAL.abuseEmail}`}>{LEGAL.abuseEmail}</a>.
       </p>
 
       <h2>Copyright</h2>
       <p>
-        Takedown notices go to our designated agent — see the{' '}
+        Takedown notices go to our designated agent. See the{' '}
         <a href="/dmca">copyright and DMCA page</a> for what a notice needs to
         contain.
       </p>

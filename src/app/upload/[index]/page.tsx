@@ -71,7 +71,7 @@ export default async function UploadPage({
               day: 'numeric',
               year: 'numeric',
             })}
-            . After that the square stays yours — it just stays blank.
+            . After that the square stays yours. It just stays blank.
           </p>
         )}
 

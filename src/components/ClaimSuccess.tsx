@@ -67,7 +67,7 @@ export default function ClaimSuccess({ sessionId }: { sessionId: string | null }
         </p>
         <p style={{ color: 'var(--text-dim)', lineHeight: 1.7 }}>
           Now the part that matters. You have 7 days to upload one photo, and
-          once you do, it is locked forever — there is no edit, no replace, no
+          once you do, it is locked forever. There is no edit, no replace, no
           undo. Take your time.
         </p>
         <p style={{ margin: '28px 0' }}>
@@ -94,7 +94,7 @@ export default function ClaimSuccess({ sessionId }: { sessionId: string | null }
         </h1>
         <p style={{ color: 'var(--text-dim)', lineHeight: 1.7 }}>
           Everyone gets exactly one, so this payment did not get a second one.
-          We&apos;ve flagged it for review — reply to your receipt email and
+          We&apos;ve flagged it for review. Reply to your receipt email and
           we&apos;ll sort it out with you.
         </p>
       </>
@@ -130,7 +130,7 @@ export default function ClaimSuccess({ sessionId }: { sessionId: string | null }
       </p>
       {slow && (
         <p className="hint" style={{ marginTop: 20 }}>
-          Still working. Your square is reserved either way — the confirmation
+          Still working. Your square is reserved either way. The confirmation
           email will have the link, so it is safe to close this tab.
         </p>
       )}

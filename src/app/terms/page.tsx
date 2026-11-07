@@ -12,7 +12,7 @@ export default function TermsPage() {
         These terms govern your purchase and use of a square on {BRAND_NAME} (the
         &quot;Site&quot;), operated by {LEGAL.entityName} (&quot;we&quot;,
         &quot;us&quot;). By buying a square or uploading content you agree to
-        them. Please read the first four sections carefully — they describe
+        them. Please read the first four sections carefully: they describe
         things that cannot be undone.
       </p>
 
@@ -93,7 +93,7 @@ export default function TermsPage() {
         non-exclusive, royalty-free, perpetual, irrevocable licence to host,
         store, reproduce, and publicly display it on the Site and in materials
         promoting the Site (including automatically generated share images). This
-        licence is perpetual because the display itself is permanent — it is what
+        licence is perpetual because the display itself is permanent, which is what
         you are buying.
       </p>
       <p>You confirm that:</p>
@@ -132,7 +132,7 @@ export default function TermsPage() {
         make reasonable efforts to keep it that way. We cannot, however,
         guarantee that any website will exist forever, and we do not promise
         uninterrupted availability. &quot;Permanent&quot; describes our
-        commitment not to remove, resell, or alter your square — not a warranty
+        commitment not to remove, resell, or alter your square, not a warranty
         against every possible future event.
       </p>
       <p>

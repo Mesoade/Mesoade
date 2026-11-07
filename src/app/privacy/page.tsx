@@ -18,8 +18,8 @@ export default function PrivacyPage() {
       <ul>
         <li>
           <strong>Your email address</strong>, captured at checkout. Used for your
-          receipt, the link to your square, upload reminders, and — if you chose
-          to leave one — your time-capsule note.
+          receipt, the link to your square, upload reminders, and, if you chose
+          to leave one, your time-capsule note.
         </li>
         <li>
           <strong>The image you upload</strong>, plus any optional caption,
@@ -61,7 +61,7 @@ export default function PrivacyPage() {
 
       <h2>How long we keep it</h2>
       <p>
-        Your square, its image, and its claim date are kept indefinitely — that
+        Your square, its image, and its claim date are kept indefinitely: that
         permanence is the product. Your email address is kept for as long as the
         square exists, because it is the only way to reach you about it. Time
         capsule notes are deleted after their final scheduled delivery.
@@ -70,7 +70,7 @@ export default function PrivacyPage() {
       <h2>Your choices</h2>
       <p>
         You may ask us to stop sending you email at any time. Note that we cannot
-        delete or alter a square&apos;s public content once uploaded — that is a
+        delete or alter a square&apos;s public content once uploaded. That is a
         deliberate, disclosed feature of the product, agreed to at purchase, and
         it is technically the same operation as the edit capability that does not
         exist. You may ask us to remove your email address from our records once
